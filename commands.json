@@ -1,0 +1,144 @@
+{
+  "!discord": {
+    "response": "Join The Discord — https://discord.gg/fb3ZpTzFmC",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": [
+      "!dc"
+    ],
+    "count": 0,
+    "enabled": true
+  },
+  "!commands": {
+    "response": "Command dashboard: http://localhost:61234",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": [
+      "!cmds"
+    ],
+    "count": 0,
+    "enabled": true
+  },
+  "!hello": {
+    "response": "Hello $(user)! Welcome to $(channel)'s stream.",
+    "cooldown": 3,
+    "userlevel": "everyone",
+    "aliases": [
+      "!hi"
+    ],
+    "count": 0,
+    "enabled": true
+  },
+  "!pin": {
+    "response": "Discord-https://discord.gg/W2XchG3bcr Socials-https://linktr.ee/TimmySudo",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!pin"],
+    "count": 0,
+    "enabled": true
+  },
+  "!age": {
+    "response": "19",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!age"],
+    "count": 0,
+    "enabled": true
+  },
+  "!birthday": {
+    "response": "January 31st, 2007, 10:23 am",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!birthday"],
+    "count": 0,
+    "enabled": true
+  },
+  "!height": {
+    "response": "6'5",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!height"],
+    "count": 0,
+    "enabled": true
+  },
+  "!ig": {
+    "response": "Follow on Instagram 📸 https://www.instagram.com/timmysudo",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!ig"],
+    "count": 0,
+    "enabled": true
+  },
+  "!mod": {
+    "response": "applications Mod Applications: https://forms.gle/Rbbp1ooTZcSvyP9b9",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!mod"],
+    "count": 0,
+    "enabled": true
+  },
+  "!of": {
+    "response": "You weirdo I don’t have an only fans. (At Least Not Yet...)",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!of"],
+    "count": 0,
+    "enabled": true
+  },
+  "!spotify": {
+    "response": "Listen on Spotify 🎧 https://open.spotify.com/artist/07ON8A07fRsgqvZGfhH0PU",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!spotify"],
+    "count": 0,
+    "enabled": true
+  },
+  "!tiktok": {
+    "response": "Follow TimmySudo on TikTok 🔥 😈 https://www.tiktok.com/@timmysudolive",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!tiktok"],
+    "count": 0,
+    "enabled": true
+  },
+  "!twitter": {
+    "response": "Follow on X 🐦 https://x.com/TimmySudo",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!twitter"],
+    "count": 0,
+    "enabled": true
+  },
+  "!youtube": {
+    "response": "Subscribe on YouTube 🔥 https://www.youtube.com/@TimmySudoLive",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!youtube"],
+    "count": 0,
+    "enabled": true
+  },
+  "!time": {
+    "response": "The Time For Timmy is- $(time)",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!time"],
+    "count": 0,
+    "enabled": true
+  },
+  "!noahglaze": {
+    "response": "@timmyandshawnskid Your so cute thanks for making me :)))!",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!noahglaze"],
+    "count": 0,
+    "enabled": true
+  },
+  "!timmyglaze": {
+    "response": "Your so majestic and cute timmy thanks for hiring me. @TimmySudo",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!timmyglaze"],
+    "count": 0,
+    "enabled": true
+  }
+}

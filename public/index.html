@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimmySudo Bot Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #09111f;
+      --panel: rgba(16, 24, 40, 0.95);
+      --surface: #111827;
+      --surface-soft: #1f2937;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --primary: #6366f1;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --border: rgba(148, 163, 184, 0.18);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 26%),
+                  linear-gradient(180deg, #050911 0%, #0c1330 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.15), transparent 16%),
+                  radial-gradient(circle at 80% 30%, rgba(56, 189, 248, 0.12), transparent 12%);
+      pointer-events: none;
+    }
+
+    .page {
+      position: relative;
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 28px 48px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 14px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 2.4vw, 3rem);
+      letter-spacing: -0.04em;
+    }
+
+    .brand p {
+      margin: 0;
+      max-width: 700px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      background: rgba(99, 102, 241, 0.12);
+      color: #c7d2fe;
+      font-size: 0.95rem;
+      font-weight: 600;
+      width: fit-content;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      padding: 26px;
+    }
+
+    .panel h2 {
+      margin: 0 0 18px;
+      font-size: 1.1rem;
+      letter-spacing: 0.02em;
+      color: #fff;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border-radius: 22px;
+      padding: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-card span {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .stat-card strong {
+      display: block;
+      font-size: 2rem;
+      line-height: 1;
+      color: #fff;
+    }
+
+    .auth-panel,
+    .auth-row,
+    .search-bar {
+      display: grid;
+      gap: 16px;
+    }
+
+    .auth-row label,
+    .command-form label {
+      display: grid;
+      gap: 8px;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .auth-row input,
+    .command-form input,
+    .command-form textarea,
+    .command-form select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .auth-actions,
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 16px;
+      color: #fff;
+    }
+
+    .table-scroll {
+      overflow: auto;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    table {
+      width: 100%;
+      min-width: 900px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 16px 18px;
+      text-align: left;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      color: #e5e7eb;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      color: #94a3b8;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    tbody tr {
+      transition: background 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(148, 163, 184, 0.08);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(99, 102, 241, 0.14);
+      color: #c7d2fe;
+      font-size: 0.82rem;
+      font-weight: 600;
+    }
+
+    .tag.success { background: rgba(34, 197, 94, 0.14); color: #86efac; }
+    .tag.danger { background: rgba(239, 68, 68, 0.14); color: #fecaca; }
+    .tag.muted { color: #94a3b8; background: rgba(148, 163, 184, 0.08); }
+
+    .command-form {
+      display: grid;
+      gap: 16px;
+    }
+
+    textarea { min-height: 120px; resize: vertical; }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 14px;
+      border: none;
+      padding: 14px 18px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+    .button.primary { background: linear-gradient(135deg, #818cf8, #4f46e5); color: white; }
+    .button.secondary { background: rgba(148, 163, 184, 0.12); color: #e2e8f0; }
+    .button.danger { background: #dc2626; color: white; }
+    .button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+    .message {
+      min-height: 26px;
+      color: #c7d2fe;
+      font-weight: 600;
+    }
+
+    .message.error { color: #fca5a5; }
+
+    .announcement {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 18px 22px;
+      border-radius: 22px;
+      border: 1px solid rgba(248, 113, 113, 0.2);
+      background: rgba(220, 38, 38, 0.12);
+      color: #fee2e2;
+      backdrop-filter: blur(10px);
+    }
+
+    .announcement.hidden { display: none; }
+
+    .announcement-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .announcement strong {
+      font-size: 1rem;
+      margin: 0;
+      color: #fecaca;
+    }
+
+    .announcement p {
+      margin: 0;
+      color: #f8fafc;
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .announcement .code {
+      display: inline-block;
+      margin-top: 6px;
+      color: #f8fafc;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      letter-spacing: 0.01em;
+    }
+
+    .hint { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+    .hidden-panel {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .columns { grid-template-columns: 1fr; }
+      .table-scroll { min-width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div id="announcement" class="announcement hidden" role="alert" aria-live="assertive">
+      <div class="announcement-copy">
+        <strong id="announcement-title">Attention</strong>
+        <p id="announcement-text">Something went wrong.</p>
+      </div>
+      <button id="announcement-ok" class="button secondary">OK</button>
+    </div>
+    <header>
+      <div class="brand">
+        <span class="hero-badge">Bot Control Center</span>
+        <h1>TimmySudo Command Dashboard</h1>
+        <p>Anyone with the link can view the dashboard and browse commands. Admin code is only required to add, edit, or delete commands.</p>
+      </div>
+    </header>
+
+    <div class="columns">
+      <section class="panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Total commands</span>
+            <strong id="stat-total">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Enabled commands</span>
+            <strong id="stat-enabled">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Disabled commands</span>
+            <strong id="stat-disabled">0</strong>
+          </div>
+          <div class="stat-card">
+            <span>Protected actions</span>
+            <strong id="stat-protected">Admin Only</strong>
+          </div>
+        </div>
+
+        <div class="auth-panel">
+          <h2>Admin access</h2>
+          <div class="auth-row">
+            <label>
+              Admin code
+              <input id="admin-code" type="password" placeholder="Enter admin code" autocomplete="off" />
+            </label>
+          </div>
+          <div class="auth-actions">
+            <button id="login-btn" class="button primary">Unlock admin</button>
+            <button id="logout-btn" class="button secondary" style="display:none;">Logout</button>
+            <span class="pill">Status: <strong id="auth-status">locked</strong></span>
+          </div>
+          <p class="hint">Anyone with the link can view this dashboard. Admin mode is required only to add, edit, or delete commands.</p>
+        </div>
+      </section>
+
+      <section id="command-builder-panel" class="panel hidden-panel">
+        <h2>Command builder</h2>
+        <form id="command-form" class="command-form">
+          <label>Command name
+            <input id="name" placeholder="!hello" required />
+          </label>
+          <label>Response
+            <textarea id="response" placeholder="Hello $(user)!" required></textarea>
+          </label>
+          <div class="search-bar">
+            <label style="width: 100%;">
+              Search commands
+              <input id="search" placeholder="Filter by name, response, or alias" />
+            </label>
+          </div>
+          <label>Cooldown seconds
+            <input id="cooldown" type="number" min="0" value="5" />
+          </label>
+          <label>User level
+            <select id="userlevel">
+              <option value="everyone">everyone</option>
+              <option value="subscriber">subscriber</option>
+              <option value="moderator">moderator</option>
+              <option value="trusted">trusted</option>
+            </select>
+          </label>
+          <label>Aliases (comma separated)
+            <input id="aliases" placeholder="!hi, !hey" />
+          </label>
+          <label>Enabled
+            <select id="enabled">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="button primary">Save command</button>
+            <button type="button" id="cancel-edit" class="button secondary">Cancel</button>
+          </div>
+          <div id="message" class="message"></div>
+        </form>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 24px;">
+      <div class="search-bar">
+        <input id="search-table" placeholder="Search and filter commands" />
+      </div>
+      <div class="table-scroll">
+        <table id="commands-table">
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Response</th>
+              <th>Aliases</th>
+              <th>Level</th>
+              <th>Cooldown</th>
+              <th>Uses</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const announcement = document.querySelector('#announcement');
+    const announcementTitle = document.querySelector('#announcement-title');
+    const announcementText = document.querySelector('#announcement-text');
+    const announcementOk = document.querySelector('#announcement-ok');
+    const tableBody = document.querySelector('#commands-table tbody');
+    const form = document.querySelector('#command-form');
+    const messageEl = document.querySelector('#message');
+    const cancelBtn = document.querySelector('#cancel-edit');
+    const loginBtn = document.querySelector('#login-btn');
+    const logoutBtn = document.querySelector('#logout-btn');
+    const commandBuilderPanel = document.querySelector('#command-builder-panel');
+    const authStatus = document.querySelector('#auth-status');
+    const adminCodeInput = document.querySelector('#admin-code');
+    const searchInput = document.querySelector('#search');
+    const searchTableInput = document.querySelector('#search-table');
+    const statTotal = document.querySelector('#stat-total');
+    const statEnabled = document.querySelector('#stat-enabled');
+    const statDisabled = document.querySelector('#stat-disabled');
+    let editMode = false;
+    let editName = null;
+    let isAuthenticated = false;
+    let adminCode = null;
+    let allCommands = {};
+
+    function showMessage(text, isError = false) {
+      messageEl.textContent = text;
+      messageEl.className = isError ? 'message error' : 'message';
+      if (text) window.setTimeout(() => { messageEl.textContent = ''; }, 5000);
+    }
+
+    function showAnnouncement(text, code = '', isError = true) {
+      announcementTitle.textContent = isError ? 'Something went wrong' : 'Notice';
+      announcementText.innerHTML = `${text}` + (code ? ` <span class="code">Error code: ${code}</span>` : '');
+      announcement.classList.remove('hidden');
+      announcement.classList.toggle('error', isError);
+      announcement.classList.toggle('info', !isError);
+    }
+
+    function hideAnnouncement() {
+      announcement.classList.add('hidden');
+    }
+
+    announcementOk.addEventListener('click', hideAnnouncement);
+
+    async function requestJson(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const message = payload.error || 'Unable to complete the request.';
+          const code = payload.code || 'UNKNOWN_ERROR';
+          showAnnouncement(`${message} Please contact noahisontopfr on Discord.`, code, true);
+          throw new Error(`${message} (${code})`);
+        }
+        return payload;
+      } catch (err) {
+        if (err.name === 'AbortError') throw err;
+        const code = err.message?.includes('(') ? err.message.split('(').pop().replace(')', '') : 'NETWORK_ERROR';
+        showAnnouncement(`A network error occurred. Please contact noahisontopfr on Discord.`, code, true);
+        throw err;
+      }
+    }
+
+    function formatAliases(aliases) {
+      return Array.isArray(aliases) && aliases.length ? aliases.map(a => a.trim()).join(', ') : '—';
+    }
+
+    function updateAuthUI() {
+      authStatus.textContent = isAuthenticated ? 'unlocked' : 'locked';
+      authStatus.style.color = isAuthenticated ? '#34d399' : '#fca5a5';
+      logoutBtn.style.display = isAuthenticated ? 'inline-flex' : 'none';
+      loginBtn.disabled = isAuthenticated;
+      adminCodeInput.disabled = isAuthenticated;
+      commandBuilderPanel.classList.toggle('hidden-panel', !isAuthenticated);
+      renderCommands();
+    }
+
+    async function authenticate(code) {
+      await requestJson('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      isAuthenticated = true;
+      adminCode = code;
+      localStorage.setItem('botAdminCode', code);
+      updateAuthUI();
+      showMessage('Admin mode unlocked');
+    }
+
+    function logout() {
+      isAuthenticated = false;
+      adminCode = null;
+      localStorage.removeItem('botAdminCode');
+      adminCodeInput.value = '';
+      updateAuthUI();
+      showMessage('Logged out');
+    }
+
+    function getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      if (adminCode) headers['X-Admin-Code'] = adminCode;
+      return headers;
+    }
+
+    function filterCommands() {
+      const query = (searchTableInput.value || searchInput.value || '').trim().toLowerCase();
+      return Object.entries(allCommands).filter(([name, cmd]) => {
+        if (!query) return true;
+        return name.toLowerCase().includes(query)
+          || (cmd.response || '').toLowerCase().includes(query)
+          || (Array.isArray(cmd.aliases) && cmd.aliases.join(' ').toLowerCase().includes(query));
+      });
+    }
+
+    function updateStats() {
+      const entries = Object.entries(allCommands);
+      const enabledCount = entries.filter(([_, cmd]) => cmd.enabled !== false).length;
+      const disabledCount = entries.length - enabledCount;
+      statTotal.textContent = entries.length;
+      statEnabled.textContent = enabledCount;
+      statDisabled.textContent = disabledCount;
+    }
+
+    function renderCommands() {
+      updateStats();
+      tableBody.innerHTML = '';
+      filterCommands().sort(([a], [b]) => a.localeCompare(b)).forEach(([name, cmd]) => {
+        const status = cmd.enabled === false ? '<span class="tag danger">Disabled</span>' : '<span class="tag success">Enabled</span>';
+        const actionButtons = isAuthenticated
+          ? `<button class="button secondary" data-action="edit" data-name="${encodeURIComponent(name)}">Edit</button>
+             <button class="button danger" data-action="delete" data-name="${encodeURIComponent(name)}">Delete</button>`
+          : '<span class="tag muted">Locked</span>';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${cmd.response.replace(/</g, '&lt;')}</td>
+          <td>${formatAliases(cmd.aliases)}</td>
+          <td>${cmd.userlevel}</td>
+          <td>${cmd.cooldown ?? 0}</td>
+          <td>${cmd.count ?? 0}</td>
+          <td>${status}</td>
+          <td>${actionButtons}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    async function loadCommands() {
+      allCommands = await requestJson('/api/commands');
+      renderCommands();
+    }
+
+    tableBody.addEventListener('click', async (event) => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      if (!isAuthenticated) return showMessage('Enter admin code to edit or delete.', true);
+      const action = button.dataset.action;
+      const name = decodeURIComponent(button.dataset.name);
+      if (action === 'edit') {
+        const cmd = await requestJson(`/api/commands/${encodeURIComponent(name)}`);
+        setForm({ name, ...cmd });
+      }
+      if (action === 'delete') {
+        if (!confirm(`Delete ${name}?`)) return;
+        await requestJson(`/api/commands/${encodeURIComponent(name)}`, {
+          method: 'DELETE',
+          headers: getAuthHeaders()
+        });
+        showMessage(`Deleted ${name}`);
+        setForm();
+        loadCommands();
+      }
+    });
+
+    cancelBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      setForm();
+    });
+
+    loginBtn.addEventListener('click', async () => {
+      const code = adminCodeInput.value.trim();
+      if (!code) return showMessage('Enter the admin code first.', true);
+      try {
+        await authenticate(code);
+      } catch (err) {
+        logout();
+      }
+    });
+
+    logoutBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      logout();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!isAuthenticated) return showMessage('Admin login required to save changes.', true);
+      const name = document.querySelector('#name').value.trim();
+      const response = document.querySelector('#response').value.trim();
+      const cooldown = Number(document.querySelector('#cooldown').value);
+      const userlevel = document.querySelector('#userlevel').value;
+      const aliases = document.querySelector('#aliases').value.split(',').map(a => a.trim()).filter(Boolean);
+      const enabled = document.querySelector('#enabled').value === 'true';
+
+      if (!name || !response) return showMessage('Name and response are required.', true);
+
+      const body = { response, cooldown, userlevel, aliases, enabled };
+      let res;
+
+      try {
+        if (editMode && editName) {
+          await requestJson(`/api/commands/${encodeURIComponent(editName)}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body)
+          });
+        } else {
+          body.name = name;
+          await requestJson('/api/commands', {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body)
+          });
+        }
+
+        showMessage(editMode ? `Updated ${name}` : `Created ${name}`);
+        setForm();
+        loadCommands();
+      } catch (err) {
+        // requestJson shows the announcement automatically
+      }
+    });
+
+    searchInput.addEventListener('input', renderCommands);
+    searchTableInput.addEventListener('input', renderCommands);
+
+    function setForm(data = null) {
+      if (!data) {
+        editMode = false;
+        editName = null;
+        form.reset();
+        document.querySelector('#cooldown').value = 5;
+        document.querySelector('#userlevel').value = 'everyone';
+        document.querySelector('#enabled').value = 'true';
+        document.querySelector('#name').disabled = false;
+        return;
+      }
+
+      editMode = true;
+      editName = data.name;
+      document.querySelector('#name').value = data.name;
+      document.querySelector('#response').value = data.response || '';
+      document.querySelector('#cooldown').value = data.cooldown || 0;
+      document.querySelector('#userlevel').value = data.userlevel || 'everyone';
+      document.querySelector('#aliases').value = formatAliases(data.aliases);
+      document.querySelector('#enabled').value = data.enabled === false ? 'false' : 'true';
+      document.querySelector('#name').disabled = true;
+    }
+
+    async function tryRestoreSession() {
+      const savedCode = localStorage.getItem('botAdminCode');
+      if (!savedCode) return updateAuthUI();
+      try {
+        await authenticate(savedCode);
+      } catch (err) {
+        logout();
+      }
+    }
+
+    tryRestoreSession();
+    loadCommands();
+  </script>
+</body>
+</html>
