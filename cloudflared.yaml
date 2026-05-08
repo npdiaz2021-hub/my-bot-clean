@@ -1,0 +1,6 @@
+tunnel: my-bot-tunnel
+credentials-file: C:\Users\yungb\.cloudflared\<tunnel-id>.json
+ingress:
+  - hostname: my-bot-clean.npdiaz2021.workers.dev
+    service: http://localhost:3000
+  - service: http_status:404
