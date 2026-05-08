@@ -41,8 +41,14 @@ To expose your local app via Cloudflare:
    - Service: `http://localhost:3000`
 
 6. **Run tunnel** (keep running):
+   ```powershell
+   & 'C:\Program Files (x86)\cloudflared\cloudflared.exe' tunnel run my-bot-tunnel
+   ```
+   If `cloudflared` is not on PATH, run it using the full installed path.
+
+7. **Start app**:
    ```bash
-   cloudflared tunnel run my-bot-tunnel
+   npm start
    ```
 
 7. **Start app**:
