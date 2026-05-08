@@ -38,7 +38,7 @@ To expose your local app via Cloudflare:
 5. **Configure in Cloudflare dashboard**:
    - Zero Trust → Networks → Tunnels → Add public hostname
    - Subdomain: `my-bot-clean`, Domain: `npdiaz2021.workers.dev`
-   - Service: `http://localhost:3000`
+   - Service: `http://localhost:61234`
 
 6. **Run tunnel** (keep running):
    ```powershell
@@ -51,10 +51,7 @@ To expose your local app via Cloudflare:
    npm start
    ```
 
-7. **Start app**:
-   ```bash
-   npm start
-   ```
+Access at: https://my-bot-clean.npdiaz2021.workers.dev
 
 Access at: https://my-bot-clean.npdiaz2021.workers.dev
 
