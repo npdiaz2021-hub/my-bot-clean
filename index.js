@@ -142,7 +142,7 @@ function getLocalIPAddress() {
 // =========================
 // Web admin UI
 // =========================
-const hhapp = express();
+const app = express();
 const WEB_PORT = process.env.PORT || process.env.WEB_PORT || 61234;
 const WEB_HOST = process.env.WEB_HOST || '0.0.0.0';
 const ADMIN_CODE = process.env.ADMIN_CODE || 'streamadmin';
