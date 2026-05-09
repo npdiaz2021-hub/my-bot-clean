@@ -20,6 +20,7 @@ let customCommands = {};
 let roles = { trusted: [] };
 let cooldowns = {}; // { commandName: timestamp }
 let botConnected = false;
+let greetedUsers = new Set(); // Track users who have been greeted this session
 
 // =========================
 // Error codes reference
@@ -320,6 +321,8 @@ client.on('disconnected', (reason) => {
 
 client.on('connected', () => {
   botConnected = true;
+  greetedUsers.clear(); // Reset greeted users for new stream session
+  console.log('Greeting memory reset (new stream session)');
 });
 
 // =========================
@@ -573,7 +576,19 @@ client.on('message', (channel, tags, message, self) => {
       const context = { username, channel, command: name };
       const response = parseVariables(cmd.response, cmd, context);
 
+      // Special handling for greeting commands - only greet once per stream
+      if ((name === '!hello' || name === '!hi') && greetedUsers.has(username)) {
+        // User already greeted this stream, skip
+        return;
+      }
+
       client.say(channel, response);
+      
+      // Mark user as greeted for greeting commands
+      if (name === '!hello' || name === '!hi') {
+        greetedUsers.add(username);
+      }
+      
       setCooldown(name);
       return;
     } else {
