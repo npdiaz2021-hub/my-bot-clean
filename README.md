@@ -5,7 +5,7 @@ Twitch bot and web admin UI with separate folders:
 - `app/` - startup file that connects the bot, website, and shared storage.
 - `bot/` - Twitch chat behavior.
 - `data/` - `commands.json` and `roles.json`.
-- `deploy/` - hosting/deploy config files.
+- `deploy/` - extra hosting/deploy config files.
 - `scripts/` - helper and smoke-test scripts.
 - `website/` - Express API, dashboard pages, and website error codes.
 - `shared/` - command and role storage used by both sides.
@@ -65,6 +65,7 @@ Access at: https://my-bot-clean.npdiaz2021.workers.dev
 
 ## Notes
 
+- Render uses the root `render.yaml`; keep that file at the repo root.
 - The bot does not use website error codes. It logs plain status messages and stays quiet for normal chat misses like unknown commands or cooldowns.
 - Website/API errors still return `{ error, code, contact }` for the dashboard.
 - Set `TWITCH_BOT_ENABLED=false` when you want to run only the website for local checks.
