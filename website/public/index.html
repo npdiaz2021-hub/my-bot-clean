@@ -230,6 +230,16 @@
       gap: 26px;
     }
 
+    .tab-panel {
+      display: grid;
+      gap: 18px;
+      animation: riseIn .32s ease both;
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
     .hero {
       display: grid;
       grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr);
@@ -423,6 +433,13 @@
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 376px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .admin-grid {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
       gap: 18px;
       align-items: start;
     }
@@ -751,6 +768,46 @@
       border-bottom: 0;
     }
 
+    .manager-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .manager-card {
+      min-height: 138px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(16, 21, 22, .56);
+      display: grid;
+      align-content: space-between;
+      gap: 12px;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    .manager-card:hover {
+      transform: translateY(-2px);
+      border-color: #53666f;
+      background: rgba(23, 30, 32, .86);
+    }
+
+    .manager-card code {
+      width: fit-content;
+      color: #dfffe9;
+      background: rgba(99, 216, 159, .08);
+      border: 1px solid rgba(99, 216, 159, .18);
+      border-radius: 6px;
+      padding: 5px 7px;
+      font-size: .85rem;
+    }
+
+    .manager-card p {
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.5;
+    }
+
     .side-status {
       display: grid;
       grid-template-columns: 1fr;
@@ -779,7 +836,8 @@
         grid-template-columns: repeat(4, minmax(0, 1fr));
       }
       .hero,
-      .grid {
+      .grid,
+      .admin-grid {
         grid-template-columns: 1fr;
       }
       .editor-panel {
@@ -799,7 +857,8 @@
       }
       .metrics,
       .two,
-      .signal-grid {
+      .signal-grid,
+      .manager-grid {
         grid-template-columns: 1fr;
       }
       .panel-head {
@@ -824,10 +883,10 @@
       </div>
 
       <nav class="nav" aria-label="Dashboard">
-        <a href="#overview" class="active">Overview</a>
-        <a href="#commands">Commands</a>
-        <a href="#editor">Editor</a>
-        <a href="#links">Links</a>
+        <a href="#stats" class="active" data-tab="stats">Stats</a>
+        <a href="#manager" data-tab="manager">Manager Commands</a>
+        <a href="#commands" data-tab="commands">Commands</a>
+        <a href="#admin" data-tab="admin">Admin Panel</a>
       </nav>
 
       <div class="side-card">
@@ -855,61 +914,108 @@
       </div>
 
       <div class="content">
-        <section class="hero" id="overview">
-          <div class="hero-copy">
-            <div>
-              <div class="overview-top">
-                <div class="kicker">Production dashboard</div>
-                <div class="overview-actions">
-                  <a class="btn" href="#commands">View commands</a>
-                  <button class="btn primary" id="hero-new-command" type="button">New command</button>
+        <section class="tab-panel" id="stats" data-tab-panel="stats">
+          <div class="hero">
+            <div class="hero-copy">
+              <div>
+                <div class="overview-top">
+                  <div class="kicker">Stats</div>
+                  <div class="overview-actions">
+                    <button class="btn" type="button" data-tab-jump="commands">View commands</button>
+                    <button class="btn primary" id="hero-new-command" type="button">New command</button>
+                  </div>
+                </div>
+                <h1>TimmySudo Command Center</h1>
+                <p>Status, command counts, queue health, and stream links for the Twitch bot running on Render.</p>
+                <div class="hero-meta">
+                  <span class="meta-chip">Twitch chat</span>
+                  <span class="meta-chip">Command editor</span>
+                  <span class="meta-chip">Render ready</span>
+                </div>
+                <div class="signal-grid">
+                  <div class="signal">
+                    <span>Service</span>
+                    <strong id="signal-service">Checking</strong>
+                  </div>
+                  <div class="signal">
+                    <span>Channel</span>
+                    <strong id="signal-channel">timmysudo</strong>
+                  </div>
+                  <div class="signal">
+                    <span>Last message</span>
+                    <strong id="signal-message">Waiting</strong>
+                  </div>
                 </div>
               </div>
-              <h1>TimmySudo Command Center</h1>
-              <p>Status, commands, and stream links for the Twitch bot running on Render.</p>
-              <div class="hero-meta">
-                <span class="meta-chip">Twitch chat</span>
-                <span class="meta-chip">Command editor</span>
-                <span class="meta-chip">Render ready</span>
+            </div>
+            <div class="metrics">
+              <div class="metric">
+                <span>Bot</span>
+                <strong id="metric-bot">...</strong>
               </div>
-              <div class="signal-grid">
-                <div class="signal">
-                  <span>Service</span>
-                  <strong id="signal-service">Checking</strong>
-                </div>
-                <div class="signal">
-                  <span>Channel</span>
-                  <strong id="signal-channel">timmysudo</strong>
-                </div>
-                <div class="signal">
-                  <span>Last message</span>
-                  <strong id="signal-message">Waiting</strong>
-                </div>
+              <div class="metric">
+                <span>Commands</span>
+                <strong id="metric-commands">0</strong>
+              </div>
+              <div class="metric">
+                <span>Queue</span>
+                <strong id="metric-queue">0</strong>
+              </div>
+              <div class="metric">
+                <span>Uptime</span>
+                <strong id="metric-uptime">0m</strong>
               </div>
             </div>
           </div>
-          <div class="metrics">
-            <div class="metric">
-              <span>Bot</span>
-              <strong id="metric-bot">...</strong>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Stream Links</h2>
+                <span class="section-subtitle">Fast access for pinned chat responses.</span>
+              </div>
             </div>
-            <div class="metric">
-              <span>Commands</span>
-              <strong id="metric-commands">0</strong>
-            </div>
-            <div class="metric">
-              <span>Queue</span>
-              <strong id="metric-queue">0</strong>
-            </div>
-            <div class="metric">
-              <span>Uptime</span>
-              <strong id="metric-uptime">0m</strong>
+            <div class="mini-list">
+              <a class="mini-row" href="https://discord.gg/fb3ZpTzFmC" target="_blank" rel="noreferrer">
+                <span>Discord</span><strong>Open</strong>
+              </a>
+              <a class="mini-row" href="https://linktr.ee/TimmySudo" target="_blank" rel="noreferrer">
+                <span>Socials</span><strong>Open</strong>
+              </a>
+              <a class="mini-row" href="https://www.youtube.com/@TimmySudoLive" target="_blank" rel="noreferrer">
+                <span>YouTube</span><strong>Open</strong>
+              </a>
             </div>
           </div>
         </section>
 
-        <section class="grid">
-          <div class="panel" id="commands">
+        <section class="tab-panel" id="manager" data-tab-panel="manager" hidden>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Manager Commands</h2>
+                <span class="section-subtitle">Broadcaster, moderators, and trusted users can run these in Twitch chat.</span>
+              </div>
+            </div>
+            <div class="manager-grid">
+              <div class="manager-card"><code>#6help</code><p>Shows the quick manager command list in chat.</p></div>
+              <div class="manager-card"><code>#6ping</code><p>Confirms the bot is connected and responding.</p></div>
+              <div class="manager-card"><code>#6reload</code><p>Reloads command and role data from the server.</p></div>
+              <div class="manager-card"><code>#6add !cmd response</code><p>Adds a new chat command with a default cooldown.</p></div>
+              <div class="manager-card"><code>#6edit !cmd response</code><p>Updates the response for an existing command.</p></div>
+              <div class="manager-card"><code>#6del !cmd</code><p>Deletes a command from chat and the dashboard.</p></div>
+              <div class="manager-card"><code>#6enable !cmd</code><p>Turns a disabled command back on.</p></div>
+              <div class="manager-card"><code>#6disable !cmd</code><p>Temporarily turns a command off.</p></div>
+              <div class="manager-card"><code>#6cooldown !cmd 5</code><p>Changes command cooldown seconds.</p></div>
+              <div class="manager-card"><code>#6level !cmd vip</code><p>Sets who can use a command.</p></div>
+              <div class="manager-card"><code>#6alias !cmd !alias</code><p>Replaces aliases for a command.</p></div>
+              <div class="manager-card"><code>#6info !cmd</code><p>Shows settings for a command.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="tab-panel" id="commands" data-tab-panel="commands" hidden>
+          <div class="panel" id="command-panel">
             <div class="panel-head">
               <div>
                 <h2>Commands</h2>
@@ -917,7 +1023,7 @@
               </div>
               <div class="filters">
                 <input id="search" type="search" placeholder="Search commands" autocomplete="off" />
-                <button class="btn primary" id="new-command" type="button">New</button>
+                <button class="btn primary" id="new-command" type="button">New command</button>
               </div>
             </div>
             <div class="table-wrap">
@@ -937,12 +1043,15 @@
               <div class="empty" id="empty-state" hidden>No commands found.</div>
             </div>
           </div>
+        </section>
 
+        <section class="tab-panel" id="admin" data-tab-panel="admin" hidden>
+          <div class="admin-grid">
           <aside class="panel editor-panel" id="editor">
             <div class="panel-head">
               <div>
-                <h2 id="editor-title">Admin</h2>
-                <span class="section-subtitle">Unlock before changing commands.</span>
+                <h2 id="editor-title">Admin Panel Login</h2>
+                <span class="section-subtitle">Enter the admin code to add, edit, delete, enable, or disable commands.</span>
               </div>
             </div>
 
@@ -1005,25 +1114,21 @@
               <div><code>#6add</code> <code>#6edit</code> <code>#6del</code></div>
             </div>
           </aside>
-        </section>
 
-        <section class="panel" id="links">
-          <div class="panel-head">
-            <div>
-              <h2>Stream Links</h2>
-              <span class="section-subtitle">Fast access for pinned chat responses.</span>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2>Admin Abilities</h2>
+                <span class="section-subtitle">Unlocked admins can manage every viewer command.</span>
+              </div>
+            </div>
+            <div class="mini-list">
+              <div class="mini-row"><span>Add commands</span><strong>Create</strong></div>
+              <div class="mini-row"><span>Edit responses, levels, cooldowns, aliases</span><strong>Update</strong></div>
+              <div class="mini-row"><span>Disable commands without deleting them</span><strong>Toggle</strong></div>
+              <div class="mini-row"><span>Delete old or broken commands</span><strong>Remove</strong></div>
             </div>
           </div>
-          <div class="mini-list">
-            <a class="mini-row" href="https://discord.gg/fb3ZpTzFmC" target="_blank" rel="noreferrer">
-              <span>Discord</span><strong>Open</strong>
-            </a>
-            <a class="mini-row" href="https://linktr.ee/TimmySudo" target="_blank" rel="noreferrer">
-              <span>Socials</span><strong>Open</strong>
-            </a>
-            <a class="mini-row" href="https://www.youtube.com/@TimmySudoLive" target="_blank" rel="noreferrer">
-              <span>YouTube</span><strong>Open</strong>
-            </a>
           </div>
         </section>
       </div>
@@ -1055,7 +1160,9 @@
       authPanel: document.querySelector('#auth-panel'),
       commandForm: document.querySelector('#command-form'),
       editorTitle: document.querySelector('#editor-title'),
-      adminCode: document.querySelector('#admin-code')
+      adminCode: document.querySelector('#admin-code'),
+      tabs: document.querySelectorAll('[data-tab]'),
+      panels: document.querySelectorAll('[data-tab-panel]')
     };
 
     function escapeHtml(value) {
@@ -1076,6 +1183,17 @@
         el.message.textContent = '';
         el.message.classList.remove('error');
       }, 5000);
+    }
+
+    function setActiveTab(tab) {
+      const nextTab = ['stats', 'manager', 'commands', 'admin'].includes(tab) ? tab : 'stats';
+      el.panels.forEach((panel) => {
+        panel.hidden = panel.dataset.tabPanel !== nextTab;
+      });
+      el.tabs.forEach((link) => {
+        link.classList.toggle('active', link.dataset.tab === nextTab);
+      });
+      history.replaceState(null, '', `#${nextTab}`);
     }
 
     function adminHeaders(extra = {}) {
@@ -1191,6 +1309,12 @@
     }
 
     function editCommand(name) {
+      if (!state.adminCode) {
+        setActiveTab('admin');
+        showMessage('Unlock admin first.', true);
+        return;
+      }
+
       const command = state.commands[name];
       if (!command) return;
       state.editing = name;
@@ -1201,11 +1325,12 @@
       document.querySelector('#userlevel').value = command.userlevel || 'everyone';
       document.querySelector('#aliases').value = (command.aliases || []).join(', ');
       document.querySelector('#enabled').value = command.enabled === false ? 'false' : 'true';
-      location.hash = '#editor';
+      setActiveTab('admin');
     }
 
     async function deleteCommand(name) {
       if (!state.adminCode) {
+        setActiveTab('admin');
         showMessage('Unlock admin first.', true);
         return;
       }
@@ -1264,12 +1389,12 @@
 
     document.querySelector('#new-command').addEventListener('click', () => {
       if (!state.adminCode) {
-        location.hash = '#editor';
+        setActiveTab('admin');
         showMessage('Unlock admin first.', true);
         return;
       }
       resetForm();
-      location.hash = '#editor';
+      setActiveTab('admin');
     });
 
     document.querySelector('#hero-new-command').addEventListener('click', () => {
@@ -1292,15 +1417,20 @@
       }
     });
 
-    document.querySelectorAll('.nav a').forEach((link) => {
-      link.addEventListener('click', () => {
-        document.querySelectorAll('.nav a').forEach((item) => item.classList.remove('active'));
-        link.classList.add('active');
+    document.querySelectorAll('[data-tab]').forEach((link) => {
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        setActiveTab(link.dataset.tab);
       });
+    });
+
+    document.querySelectorAll('[data-tab-jump]').forEach((button) => {
+      button.addEventListener('click', () => setActiveTab(button.dataset.tabJump));
     });
 
     if (state.adminCode) setUnlocked(true);
     resetForm();
+    setActiveTab(location.hash.replace('#', '') || 'stats');
     refreshAll().catch((err) => showMessage(err.message, true));
     setInterval(loadStatus, 15000);
   </script>
