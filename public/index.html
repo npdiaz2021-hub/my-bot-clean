@@ -295,6 +295,42 @@
 
     .message.error { color: #fca5a5; }
 
+    /* Tab styles */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .tab-button {
+      background: none;
+      border: none;
+      padding: 12px 24px;
+      cursor: pointer;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .tab-button.active {
+      color: var(--text);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-button:hover {
+      color: var(--text);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
     .announcement {
       display: flex;
       align-items: center;
@@ -602,6 +638,13 @@
         </div>
       </section>
 
+      <div class="tabs">
+        <button class="tab-button active" data-tab="commands">Commands</button>
+        <button class="tab-button" data-tab="discord">Discord</button>
+        <button class="tab-button" data-tab="socials">Socials</button>
+      </div>
+
+      <div id="commands-tab" class="tab-content active">
       <section id="command-builder-panel" class="panel hidden-panel">
         <h2>Command builder</h2>
         <form id="command-form" class="command-form">
@@ -675,6 +718,29 @@
         </table>
       </div>
     </section>
+      </div>
+
+      <div id="discord-tab" class="tab-content">
+        <section class="panel">
+          <h2>Join Our Discord</h2>
+          <p>Connect with the community! Join our Discord server for updates, discussions, and more.</p>
+          <a href="https://discord.gg/fb3ZpTzFmC" target="_blank" class="button primary" style="margin-top: 16px;">Join Discord Server</a>
+        </section>
+      </div>
+
+      <div id="socials-tab" class="tab-content">
+        <section class="panel">
+          <h2>Follow Us</h2>
+          <p>Stay connected on our social media platforms!</p>
+          <div style="display: grid; gap: 12px; margin-top: 16px;">
+            <a href="https://www.tiktok.com/@timmysudolive" target="_blank" class="button secondary">TikTok 🔥 😈</a>
+            <a href="https://www.instagram.com/timmysudo" target="_blank" class="button secondary">Instagram 📸</a>
+            <a href="https://x.com/TimmySudo" target="_blank" class="button secondary">X (Twitter) 🐦</a>
+            <a href="https://www.youtube.com/@TimmySudoLive" target="_blank" class="button secondary">YouTube 🔥</a>
+            <a href="https://open.spotify.com/artist/07ON8A07fRsgqvZGfhH0PU" target="_blank" class="button secondary">Spotify 🎧</a>
+          </div>
+        </section>
+      </div>
   </div>
 
   <script>
@@ -1073,8 +1139,18 @@
     searchInput.addEventListener('input', renderCommands);
     searchTableInput.addEventListener('input', renderCommands);
 
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const tabName = button.dataset.tab;
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        document.getElementById(tabName + '-tab').classList.add('active');
+      });
+    });
+
     // New event listeners
-    themeToggle.addEventListener('click', toggleTheme);
     mobileMenuToggle.addEventListener('click', () => {
       keyboardShortcuts.classList.toggle('show');
     });
