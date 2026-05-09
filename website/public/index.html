@@ -232,7 +232,7 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr);
       gap: 18px;
       align-items: stretch;
     }
@@ -250,7 +250,7 @@
     }
 
     .hero-copy {
-      min-height: 286px;
+      min-height: 264px;
       padding: 30px;
       display: grid;
       align-content: space-between;
@@ -263,9 +263,9 @@
       position: absolute;
       inset: 0;
       background:
-        linear-gradient(135deg, rgba(99, 216, 159, .18), transparent 42%),
-        linear-gradient(45deg, transparent 54%, rgba(238, 197, 102, .13)),
-        repeating-linear-gradient(90deg, rgba(255,255,255,.03), rgba(255,255,255,.03) 1px, transparent 1px, transparent 42px);
+        linear-gradient(135deg, rgba(99, 216, 159, .13), transparent 44%),
+        linear-gradient(45deg, transparent 56%, rgba(114, 182, 255, .12)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.026), rgba(255,255,255,.026) 1px, transparent 1px, transparent 44px);
       pointer-events: none;
       animation: scanLines 12s linear infinite;
     }
@@ -278,16 +278,16 @@
 
     h1 {
       max-width: 720px;
-      font-size: clamp(2rem, 4vw, 4rem);
-      line-height: 1;
+      font-size: clamp(1.9rem, 3vw, 3.1rem);
+      line-height: 1.05;
       letter-spacing: 0;
     }
 
     .hero-copy p {
       max-width: 650px;
       color: var(--muted);
-      margin-top: 16px;
-      font-size: 1rem;
+      margin-top: 10px;
+      font-size: .98rem;
       line-height: 1.6;
     }
 
@@ -305,12 +305,26 @@
       font-weight: 700;
     }
 
+    .overview-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .overview-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .hero-meta {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
-      margin-top: 20px;
+      margin-top: 18px;
     }
 
     .meta-chip {
@@ -325,6 +339,36 @@
       font-size: .86rem;
     }
 
+    .signal-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .signal {
+      min-height: 70px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .08);
+      background: rgba(16, 21, 22, .68);
+    }
+
+    .signal span {
+      display: block;
+      color: var(--muted);
+      font-size: .76rem;
+      margin-bottom: 8px;
+    }
+
+    .signal strong {
+      display: block;
+      font-size: .95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     .metrics {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -333,7 +377,7 @@
 
     .metric {
       padding: 18px;
-      min-height: 134px;
+      min-height: 123px;
       box-shadow: var(--soft-shadow);
       display: grid;
       align-content: space-between;
@@ -356,7 +400,7 @@
     }
 
     .metric:hover {
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       border-color: #53666f;
       background:
         linear-gradient(180deg, rgba(255,255,255,.055), transparent),
@@ -541,6 +585,10 @@
       transition: background .16s ease, transform .16s ease;
     }
 
+    tbody tr:nth-child(even) {
+      background: rgba(255, 255, 255, .012);
+    }
+
     tbody tr:hover {
       background: rgba(255, 255, 255, .025);
       transform: translateX(2px);
@@ -703,6 +751,23 @@
       border-bottom: 0;
     }
 
+    .side-status {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .side-status strong {
+      font-size: .95rem;
+    }
+
+    .side-status small {
+      color: var(--muted);
+      font-size: .76rem;
+      line-height: 1.4;
+    }
+
     @media (max-width: 980px) {
       .shell { grid-template-columns: 1fr; }
       .side {
@@ -733,7 +798,8 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
       .metrics,
-      .two {
+      .two,
+      .signal-grid {
         grid-template-columns: 1fr;
       }
       .panel-head {
@@ -767,6 +833,9 @@
       <div class="side-card">
         <span>Admin</span>
         <strong id="admin-state">Locked</strong>
+        <div class="side-status">
+          <small id="side-bot">Bot status is loading.</small>
+        </div>
       </div>
     </aside>
 
@@ -788,14 +857,34 @@
       <div class="content">
         <section class="hero" id="overview">
           <div class="hero-copy">
-            <div class="kicker">Production dashboard</div>
             <div>
-              <h1>TimmySudo Live Desk</h1>
-              <p>Command edits, bot health, and stream links in one fast control surface for Twitch chat.</p>
+              <div class="overview-top">
+                <div class="kicker">Production dashboard</div>
+                <div class="overview-actions">
+                  <a class="btn" href="#commands">View commands</a>
+                  <button class="btn primary" id="hero-new-command" type="button">New command</button>
+                </div>
+              </div>
+              <h1>TimmySudo Command Center</h1>
+              <p>Status, commands, and stream links for the Twitch bot running on Render.</p>
               <div class="hero-meta">
                 <span class="meta-chip">Twitch chat</span>
                 <span class="meta-chip">Command editor</span>
                 <span class="meta-chip">Render ready</span>
+              </div>
+              <div class="signal-grid">
+                <div class="signal">
+                  <span>Service</span>
+                  <strong id="signal-service">Checking</strong>
+                </div>
+                <div class="signal">
+                  <span>Channel</span>
+                  <strong id="signal-channel">timmysudo</strong>
+                </div>
+                <div class="signal">
+                  <span>Last message</span>
+                  <strong id="signal-message">Waiting</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -954,6 +1043,10 @@
       metricCommands: document.querySelector('#metric-commands'),
       metricQueue: document.querySelector('#metric-queue'),
       metricUptime: document.querySelector('#metric-uptime'),
+      sideBot: document.querySelector('#side-bot'),
+      signalService: document.querySelector('#signal-service'),
+      signalChannel: document.querySelector('#signal-channel'),
+      signalMessage: document.querySelector('#signal-message'),
       rows: document.querySelector('#command-rows'),
       empty: document.querySelector('#empty-state'),
       search: document.querySelector('#search'),
@@ -1018,10 +1111,16 @@
         el.metricCommands.textContent = status.commands || 0;
         el.metricQueue.textContent = status.bot?.queuedMessages ?? 0;
         el.metricUptime.textContent = formatUptime(status.uptime);
+        el.sideBot.textContent = connected ? 'Connected to Twitch chat.' : 'Website is live; bot is offline or disabled.';
+        el.signalService.textContent = connected ? 'Online' : 'Offline';
+        el.signalChannel.textContent = status.bot?.channel || 'timmysudo';
+        el.signalMessage.textContent = status.bot?.lastMessageAt ? new Date(status.bot.lastMessageAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : 'Waiting';
       } catch (err) {
         el.status.querySelector('.dot').className = 'dot offline';
         el.status.querySelector('span:last-child').textContent = 'Status unavailable';
         el.metricBot.textContent = 'Unknown';
+        el.sideBot.textContent = 'Unable to read bot status.';
+        el.signalService.textContent = 'Unknown';
       }
     }
 
@@ -1171,6 +1270,10 @@
       }
       resetForm();
       location.hash = '#editor';
+    });
+
+    document.querySelector('#hero-new-command').addEventListener('click', () => {
+      document.querySelector('#new-command').click();
     });
 
     document.querySelector('#cancel-edit').addEventListener('click', resetForm);
