@@ -140,5 +140,13 @@
     "aliases": ["!timmyglaze"],
     "count": 0,
     "enabled": true
+  },
+  "!test": {
+    "response": "test command",
+    "cooldown": 5,
+    "userlevel": "everyone",
+    "aliases": ["!t"],
+    "count": 0,
+    "enabled": true
   }
 }
