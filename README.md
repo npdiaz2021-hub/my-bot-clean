@@ -1,18 +1,28 @@
-# My Bot Clean
+# TimmySudo Bot
 
-Simple Twitch bot with a web admin UI.
+Twitch bot and web admin UI with separate folders:
 
-## Getting startedd
+- `app/` - startup file that connects the bot, website, and shared storage.
+- `bot/` - Twitch chat behavior.
+- `data/` - `commands.json` and `roles.json`.
+- `deploy/` - hosting/deploy config files.
+- `scripts/` - helper and smoke-test scripts.
+- `website/` - Express API, dashboard pages, and website error codes.
+- `shared/` - command and role storage used by both sides.
 
-1. Install dependencies
+## Getting Started
+
+1. Install dependencies:
    ```bash
    npm install
    ```
-2. Set environment variables in `.env`
-3. Run the app
+2. Set environment variables in `.env`.
+3. Run the app:
    ```bash
    npm start
    ```
+
+The dashboard runs on `PORT` / `WEB_PORT`. The bot and website share `data/commands.json`, so edits from chat and edits from the dashboard stay together.
 
 ## Cloudflare Tunnel Setup (for public access)
 
@@ -53,10 +63,38 @@ To expose your local app via Cloudflare:
 
 Access at: https://my-bot-clean.npdiaz2021.workers.dev
 
-Access at: https://my-bot-clean.npdiaz2021.workers.dev
-
 ## Notes
 
-- The admin UI runs on `PORT` / `WEB_PORT`.
+- The bot does not use website error codes. It logs plain status messages and stays quiet for normal chat misses like unknown commands or cooldowns.
+- Website/API errors still return `{ error, code, contact }` for the dashboard.
+- Set `TWITCH_BOT_ENABLED=false` when you want to run only the website for local checks.
 - Do not commit `.env` to GitHub.
 - Use Cloudflare or another host to expose the web admin UI publicly.
+
+## Twitch Bot Controls
+
+Managers are the broadcaster, moderators, and trusted users. Manager chat commands:
+
+- `#6help` - show bot controls.
+- `#6ping` - confirm the bot is awake.
+- `#6reload` - reload `data/commands.json` and `data/roles.json`.
+- `#6add !command response` - add a command.
+- `#6edit !command response` - edit a command response.
+- `#6del !command` - delete a command.
+- `#6enable !command` / `#6disable !command` - turn a command on or off.
+- `#6cooldown !command seconds` - set command cooldown.
+- `#6level !command everyone|subscriber|vip|moderator|trusted|broadcaster` - set who can use it.
+- `#6alias !command !alias1 !alias2` - replace aliases.
+- `#6info !command` - show command settings.
+- `#6list` - show a short command list.
+
+Command response variables:
+
+- `$(user)` / `$(sender)` - person who used the command.
+- `$(channel)` - channel name.
+- `$(time)` - current Central time.
+- `$(args)` - everything typed after the command.
+- `$(1)`, `$(2)`, etc. - individual command arguments.
+- `$(target)` / `$(touser)` - first argument, or the sender if none was provided.
+- `$(count)` - command use counter.
+- `$(random:one|two|three)` - random choice.

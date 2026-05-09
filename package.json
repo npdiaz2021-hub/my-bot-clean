@@ -2,11 +2,13 @@
   "name": "my-bot-clean",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app/index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node app/index.js",
+    "dev": "node app/index.js",
+    "check": "node --check app/index.js && node --check bot/twitchBot.js && node --check shared/store.js && node --check website/server.js && node --check website/errorCodes.js && node --check scripts/fix_aliases.js && node --check scripts/test_server.js",
+    "fix:aliases": "node scripts/fix_aliases.js",
+    "test": "npm run check"
   },
   "keywords": [],
   "author": "",

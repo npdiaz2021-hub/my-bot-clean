@@ -6,7 +6,7 @@
     "enabled": true
   },
   "assets": {
-    "directory": "public"
+    "directory": "website/public"
   },
   "compatibility_flags": [
     "nodejs_compat"

@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimmySudo Bot Control</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111416;
+      --band: #181d20;
+      --panel: #20262b;
+      --panel-soft: #252d32;
+      --text: #f4f1e8;
+      --muted: #aeb7b2;
+      --line: #354047;
+      --green: #5ed39a;
+      --blue: #68a7ff;
+      --red: #ff7474;
+      --yellow: #e8bd5b;
+      --focus: #9fd7ff;
+      --shadow: 0 18px 60px rgba(0, 0, 0, .28);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      letter-spacing: 0;
+    }
+
+    button, input, textarea, select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+    }
+
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 24px 18px;
+      background: #15191b;
+      border-right: 1px solid var(--line);
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(94, 211, 154, .95), rgba(104, 167, 255, .92));
+      color: #101416;
+      font-weight: 900;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+    }
+
+    .brand strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.1;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      margin-top: 3px;
+    }
+
+    .nav {
+      display: grid;
+      align-content: start;
+      gap: 6px;
+    }
+
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 40px;
+      padding: 9px 10px;
+      border-radius: 8px;
+      color: var(--muted);
+    }
+
+    .nav a:hover,
+    .nav a.active {
+      color: var(--text);
+      background: var(--panel-soft);
+    }
+
+    .side-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-card span {
+      color: var(--muted);
+      font-size: .8rem;
+    }
+
+    .main {
+      min-width: 0;
+      background:
+        linear-gradient(180deg, rgba(104, 167, 255, .08), transparent 360px),
+        var(--bg);
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(17, 20, 22, .88);
+      backdrop-filter: blur(14px);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: .88rem;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--yellow);
+    }
+
+    .dot.online { background: var(--green); }
+    .dot.offline { background: var(--red); }
+
+    .content {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 30px 28px 54px;
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr);
+      gap: 22px;
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .panel,
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(32, 38, 43, .94);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      min-height: 250px;
+      padding: 28px;
+      display: grid;
+      align-content: end;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-copy::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(94, 211, 154, .16), transparent 38%),
+        linear-gradient(45deg, transparent 55%, rgba(232, 189, 91, .12)),
+        repeating-linear-gradient(90deg, rgba(255,255,255,.035), rgba(255,255,255,.035) 1px, transparent 1px, transparent 38px);
+      pointer-events: none;
+    }
+
+    .hero-copy > * { position: relative; }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 680px;
+      font-size: clamp(2rem, 4vw, 4.2rem);
+      line-height: .96;
+      letter-spacing: 0;
+    }
+
+    .hero-copy p {
+      max-width: 650px;
+      color: var(--muted);
+      margin-top: 16px;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 18px;
+      min-height: 112px;
+      box-shadow: none;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: .82rem;
+      margin-bottom: 10px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.75rem;
+      line-height: 1;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 1.08rem;
+    }
+
+    .actions,
+    .form-actions,
+    .filters {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 38px;
+      padding: 9px 13px;
+      border-radius: 8px;
+      background: var(--panel-soft);
+      color: var(--text);
+      border: 1px solid var(--line);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background .16s ease, border-color .16s ease;
+    }
+
+    .btn:hover {
+      background: #2c363c;
+      border-color: #4d5d66;
+    }
+
+    .btn.primary {
+      background: var(--green);
+      color: #111416;
+      border-color: transparent;
+      font-weight: 700;
+    }
+
+    .btn.danger {
+      background: rgba(255, 116, 116, .14);
+      color: #ffd2d2;
+      border-color: rgba(255, 116, 116, .42);
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      color: var(--text);
+      background: #15191b;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      min-height: 40px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.45;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px rgba(159, 215, 255, .12);
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    .form {
+      display: grid;
+      gap: 14px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+    }
+
+    th,
+    td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: .91rem;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      background: #15191b;
+      color: var(--muted);
+      font-size: .78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .response {
+      color: var(--muted);
+      max-width: 430px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(104, 167, 255, .13);
+      color: #cfe2ff;
+      font-size: .78rem;
+      border: 1px solid rgba(104, 167, 255, .24);
+    }
+
+    .tag.off {
+      background: rgba(255, 116, 116, .12);
+      color: #ffd2d2;
+      border-color: rgba(255, 116, 116, .25);
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .message {
+      min-height: 24px;
+      color: var(--green);
+      font-size: .9rem;
+    }
+
+    .message.error {
+      color: #ffd2d2;
+    }
+
+    .auth {
+      display: grid;
+      gap: 12px;
+    }
+
+    .empty {
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .mini-row:last-child {
+      border-bottom: 0;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .side {
+        position: static;
+        height: auto;
+        grid-template-rows: none;
+      }
+      .nav {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar,
+      .content,
+      .side {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+      .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .metrics,
+      .two {
+        grid-template-columns: 1fr;
+      }
+      .panel-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+      .filters input {
+        min-width: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="side">
+      <div class="brand">
+        <div class="mark">TS</div>
+        <div>
+          <strong>TimmySudo</strong>
+          <span>Bot Control</span>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Dashboard">
+        <a href="#overview" class="active">Overview</a>
+        <a href="#commands">Commands</a>
+        <a href="#editor">Editor</a>
+        <a href="#links">Links</a>
+      </nav>
+
+      <div class="side-card">
+        <span>Admin</span>
+        <strong id="admin-state">Locked</strong>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="status-pill" id="bot-status">
+          <span class="dot"></span>
+          <span>Checking bot</span>
+        </div>
+        <button class="btn" id="refresh-btn" type="button">Refresh</button>
+      </div>
+
+      <div class="content">
+        <section class="hero" id="overview">
+          <div class="hero-copy">
+            <h1>Stream commands without the chaos.</h1>
+            <p>Fast command edits, live bot status, and safer admin controls for TimmySudo's Twitch chat.</p>
+          </div>
+          <div class="metrics">
+            <div class="metric">
+              <span>Bot</span>
+              <strong id="metric-bot">...</strong>
+            </div>
+            <div class="metric">
+              <span>Commands</span>
+              <strong id="metric-commands">0</strong>
+            </div>
+            <div class="metric">
+              <span>Queue</span>
+              <strong id="metric-queue">0</strong>
+            </div>
+            <div class="metric">
+              <span>Uptime</span>
+              <strong id="metric-uptime">0m</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="grid">
+          <div class="panel" id="commands">
+            <div class="panel-head">
+              <h2>Commands</h2>
+              <div class="filters">
+                <input id="search" type="search" placeholder="Search commands" autocomplete="off" />
+                <button class="btn primary" id="new-command" type="button">New</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Response</th>
+                    <th>Level</th>
+                    <th>Cooldown</th>
+                    <th>Status</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="command-rows"></tbody>
+              </table>
+              <div class="empty" id="empty-state" hidden>No commands found.</div>
+            </div>
+          </div>
+
+          <aside class="panel" id="editor">
+            <div class="panel-head">
+              <h2 id="editor-title">Admin</h2>
+            </div>
+
+            <div class="auth" id="auth-panel">
+              <label>
+                Admin code
+                <input id="admin-code" type="password" autocomplete="current-password" />
+              </label>
+              <button class="btn primary" id="login-btn" type="button">Unlock</button>
+            </div>
+
+            <form class="form" id="command-form" hidden>
+              <label>
+                Command
+                <input id="name" name="name" placeholder="!example" required />
+              </label>
+              <label>
+                Response
+                <textarea id="response" name="response" placeholder="Response shown in chat" required></textarea>
+              </label>
+              <div class="two">
+                <label>
+                  Cooldown
+                  <input id="cooldown" name="cooldown" type="number" min="0" value="5" />
+                </label>
+                <label>
+                  Level
+                  <select id="userlevel" name="userlevel">
+                    <option value="everyone">everyone</option>
+                    <option value="subscriber">subscriber</option>
+                    <option value="vip">vip</option>
+                    <option value="moderator">moderator</option>
+                    <option value="trusted">trusted</option>
+                    <option value="broadcaster">broadcaster</option>
+                  </select>
+                </label>
+              </div>
+              <label>
+                Aliases
+                <input id="aliases" name="aliases" placeholder="!alias1, !alias2" />
+              </label>
+              <label>
+                Status
+                <select id="enabled" name="enabled">
+                  <option value="true">enabled</option>
+                  <option value="false">disabled</option>
+                </select>
+              </label>
+              <div class="form-actions">
+                <button class="btn primary" type="submit">Save</button>
+                <button class="btn" id="cancel-edit" type="button">Clear</button>
+                <button class="btn" id="logout-btn" type="button">Lock</button>
+              </div>
+            </form>
+            <div class="message" id="message" role="status" aria-live="polite"></div>
+          </aside>
+        </section>
+
+        <section class="panel" id="links">
+          <div class="panel-head">
+            <h2>Stream Links</h2>
+          </div>
+          <div class="mini-list">
+            <a class="mini-row" href="https://discord.gg/fb3ZpTzFmC" target="_blank" rel="noreferrer">
+              <span>Discord</span><strong>Open</strong>
+            </a>
+            <a class="mini-row" href="https://linktr.ee/TimmySudo" target="_blank" rel="noreferrer">
+              <span>Socials</span><strong>Open</strong>
+            </a>
+            <a class="mini-row" href="https://www.youtube.com/@TimmySudoLive" target="_blank" rel="noreferrer">
+              <span>YouTube</span><strong>Open</strong>
+            </a>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      adminCode: localStorage.getItem('admin-code') || '',
+      commands: {},
+      editing: ''
+    };
+
+    const el = {
+      status: document.querySelector('#bot-status'),
+      metricBot: document.querySelector('#metric-bot'),
+      metricCommands: document.querySelector('#metric-commands'),
+      metricQueue: document.querySelector('#metric-queue'),
+      metricUptime: document.querySelector('#metric-uptime'),
+      rows: document.querySelector('#command-rows'),
+      empty: document.querySelector('#empty-state'),
+      search: document.querySelector('#search'),
+      message: document.querySelector('#message'),
+      adminState: document.querySelector('#admin-state'),
+      authPanel: document.querySelector('#auth-panel'),
+      commandForm: document.querySelector('#command-form'),
+      editorTitle: document.querySelector('#editor-title'),
+      adminCode: document.querySelector('#admin-code')
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      }[char]));
+    }
+
+    function showMessage(text, isError = false) {
+      el.message.textContent = text;
+      el.message.classList.toggle('error', isError);
+      clearTimeout(showMessage.timer);
+      showMessage.timer = setTimeout(() => {
+        el.message.textContent = '';
+        el.message.classList.remove('error');
+      }, 5000);
+    }
+
+    function adminHeaders(extra = {}) {
+      return { ...extra, 'X-Admin-Code': state.adminCode };
+    }
+
+    async function requestJson(url, options = {}) {
+      const response = await fetch(url, options);
+      const text = await response.text();
+      const payload = text ? JSON.parse(text) : {};
+      if (!response.ok) {
+        const code = payload.code ? ` (${payload.code})` : '';
+        throw new Error(`${payload.error || 'Request failed'}${code}`);
+      }
+      return payload;
+    }
+
+    function formatUptime(seconds) {
+      const total = Math.max(0, Math.floor(seconds || 0));
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }
+
+    async function loadStatus() {
+      try {
+        const status = await requestJson('/api/status');
+        const connected = Boolean(status.connected);
+        const dot = el.status.querySelector('.dot');
+        dot.className = `dot ${connected ? 'online' : 'offline'}`;
+        el.status.querySelector('span:last-child').textContent = connected ? 'Bot online' : 'Bot offline';
+        el.metricBot.textContent = connected ? 'Online' : 'Offline';
+        el.metricCommands.textContent = status.commands || 0;
+        el.metricQueue.textContent = status.bot?.queuedMessages ?? 0;
+        el.metricUptime.textContent = formatUptime(status.uptime);
+      } catch (err) {
+        el.status.querySelector('.dot').className = 'dot offline';
+        el.status.querySelector('span:last-child').textContent = 'Status unavailable';
+        el.metricBot.textContent = 'Unknown';
+      }
+    }
+
+    async function loadCommands() {
+      state.commands = await requestJson('/api/commands');
+      renderCommands();
+    }
+
+    function renderCommands() {
+      const filter = el.search.value.trim().toLowerCase();
+      const entries = Object.entries(state.commands)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .filter(([name, command]) => {
+          const haystack = `${name} ${command.response || ''} ${(command.aliases || []).join(' ')}`.toLowerCase();
+          return haystack.includes(filter);
+        });
+
+      el.empty.hidden = entries.length !== 0;
+      el.rows.innerHTML = entries.map(([name, command]) => `
+        <tr>
+          <td><strong>${escapeHtml(name)}</strong></td>
+          <td><div class="response" title="${escapeHtml(command.response || '')}">${escapeHtml(command.response || '')}</div></td>
+          <td>${escapeHtml(command.userlevel || 'everyone')}</td>
+          <td>${Number(command.cooldown) || 0}s</td>
+          <td><span class="tag ${command.enabled === false ? 'off' : ''}">${command.enabled === false ? 'Disabled' : 'Enabled'}</span></td>
+          <td>
+            <div class="row-actions">
+              <button class="btn" type="button" data-action="edit" data-name="${escapeHtml(name)}">Edit</button>
+              <button class="btn danger" type="button" data-action="delete" data-name="${escapeHtml(name)}">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function setUnlocked(unlocked) {
+      el.authPanel.hidden = unlocked;
+      el.commandForm.hidden = !unlocked;
+      el.adminState.textContent = unlocked ? 'Unlocked' : 'Locked';
+      if (unlocked) {
+        localStorage.setItem('admin-code', state.adminCode);
+      } else {
+        localStorage.removeItem('admin-code');
+      }
+    }
+
+    async function login() {
+      const code = el.adminCode.value.trim();
+      if (!code) return;
+      await requestJson('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      state.adminCode = code;
+      el.adminCode.value = '';
+      setUnlocked(true);
+      showMessage('Admin unlocked.');
+    }
+
+    function resetForm() {
+      state.editing = '';
+      el.editorTitle.textContent = 'New Command';
+      el.commandForm.reset();
+      document.querySelector('#cooldown').value = 5;
+      document.querySelector('#enabled').value = 'true';
+      document.querySelector('#userlevel').value = 'everyone';
+    }
+
+    function editCommand(name) {
+      const command = state.commands[name];
+      if (!command) return;
+      state.editing = name;
+      el.editorTitle.textContent = `Edit ${name}`;
+      document.querySelector('#name').value = name;
+      document.querySelector('#response').value = command.response || '';
+      document.querySelector('#cooldown').value = Number(command.cooldown) || 0;
+      document.querySelector('#userlevel').value = command.userlevel || 'everyone';
+      document.querySelector('#aliases').value = (command.aliases || []).join(', ');
+      document.querySelector('#enabled').value = command.enabled === false ? 'false' : 'true';
+      location.hash = '#editor';
+    }
+
+    async function deleteCommand(name) {
+      if (!state.adminCode) {
+        showMessage('Unlock admin first.', true);
+        return;
+      }
+      if (!confirm(`Delete ${name}?`)) return;
+      await requestJson(`/api/commands/${encodeURIComponent(name)}`, {
+        method: 'DELETE',
+        headers: adminHeaders()
+      });
+      showMessage(`${name} deleted.`);
+      await loadCommands();
+      resetForm();
+    }
+
+    async function saveCommand(event) {
+      event.preventDefault();
+      const data = new FormData(el.commandForm);
+      const payload = {
+        name: data.get('name'),
+        response: data.get('response'),
+        cooldown: Number(data.get('cooldown')) || 0,
+        userlevel: data.get('userlevel'),
+        aliases: String(data.get('aliases') || '').split(',').map((alias) => alias.trim()).filter(Boolean),
+        enabled: data.get('enabled') === 'true'
+      };
+
+      const editing = Boolean(state.editing);
+      const url = editing ? `/api/commands/${encodeURIComponent(state.editing)}` : '/api/commands';
+      await requestJson(url, {
+        method: editing ? 'PUT' : 'POST',
+        headers: adminHeaders({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(payload)
+      });
+      showMessage(editing ? 'Command updated.' : 'Command created.');
+      await loadCommands();
+      resetForm();
+    }
+
+    async function refreshAll() {
+      await Promise.all([loadStatus(), loadCommands()]);
+    }
+
+    document.querySelector('#refresh-btn').addEventListener('click', () => {
+      refreshAll().catch((err) => showMessage(err.message, true));
+    });
+
+    document.querySelector('#login-btn').addEventListener('click', () => {
+      login().catch((err) => showMessage(err.message, true));
+    });
+
+    document.querySelector('#logout-btn').addEventListener('click', () => {
+      state.adminCode = '';
+      setUnlocked(false);
+      resetForm();
+      showMessage('Admin locked.');
+    });
+
+    document.querySelector('#new-command').addEventListener('click', () => {
+      if (!state.adminCode) {
+        location.hash = '#editor';
+        showMessage('Unlock admin first.', true);
+        return;
+      }
+      resetForm();
+      location.hash = '#editor';
+    });
+
+    document.querySelector('#cancel-edit').addEventListener('click', resetForm);
+    el.search.addEventListener('input', renderCommands);
+    el.commandForm.addEventListener('submit', (event) => {
+      saveCommand(event).catch((err) => showMessage(err.message, true));
+    });
+
+    el.rows.addEventListener('click', (event) => {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const name = button.dataset.name;
+      if (button.dataset.action === 'edit') editCommand(name);
+      if (button.dataset.action === 'delete') {
+        deleteCommand(name).catch((err) => showMessage(err.message, true));
+      }
+    });
+
+    document.querySelectorAll('.nav a').forEach((link) => {
+      link.addEventListener('click', () => {
+        document.querySelectorAll('.nav a').forEach((item) => item.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    if (state.adminCode) setUnlocked(true);
+    resetForm();
+    refreshAll().catch((err) => showMessage(err.message, true));
+    setInterval(loadStatus, 15000);
+  </script>
+</body>
+</html>

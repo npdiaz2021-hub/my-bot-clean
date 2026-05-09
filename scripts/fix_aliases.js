@@ -1,6 +1,8 @@
 const fs = require('fs');
-const path = 'commands.json';
-const data = JSON.parse(fs.readFileSync(path, 'utf8'));
+const path = require('path');
+
+const commandsFile = path.join(__dirname, '..', 'data', 'commands.json');
+const data = JSON.parse(fs.readFileSync(commandsFile, 'utf8'));
 let changed = false;
 for (const [name, cmd] of Object.entries(data)) {
   if (!Array.isArray(cmd.aliases)) {
@@ -13,6 +15,6 @@ for (const [name, cmd] of Object.entries(data)) {
   }
 }
 if (changed) {
-  fs.writeFileSync(path, JSON.stringify(data, null, 2) + '\n');
+  fs.writeFileSync(commandsFile, JSON.stringify(data, null, 2) + '\n');
 }
 console.log('updated', changed);
