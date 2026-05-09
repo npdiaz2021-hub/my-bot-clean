@@ -278,6 +278,7 @@ function findCommand(trigger) {
 // Command management helpers
 // =========================
 function addCommand(name, response) {
+  if (customCommands[name]) return false; // Already exists
   customCommands[name] = {
     response: response,
     cooldown: 5,
@@ -287,6 +288,7 @@ function addCommand(name, response) {
     enabled: true
   };
   saveCommands();
+  return true;
 }
 
 function editCommand(name, newResponse) {
@@ -329,12 +331,16 @@ client.on('message', (channel, tags, message, self) => {
     const response = parts.slice(2).join(' ');
 
     if (!commandName || !response) {
-      client.say(channel, `Usage: #6add !command Your message here`);
+      client.say(channel, `Error: INVALID_SYNTAX - Usage: #6add !command Your message here`);
       return;
     }
 
-    addCommand(commandName, response);
-    client.say(channel, `Added new command: ${commandName}`);
+    if (!addCommand(commandName, response)) {
+      client.say(channel, `Error: COMMAND_EXISTS - ${commandName}`);
+      return;
+    }
+
+    client.say(channel, `Success: COMMAND_ADDED - ${commandName}`);
     return;
   }
 
@@ -345,16 +351,16 @@ client.on('message', (channel, tags, message, self) => {
     const newResponse = parts.slice(2).join(' ');
 
     if (!commandName || !newResponse) {
-      client.say(channel, `Usage: #6edit !command New response here`);
+      client.say(channel, `Error: INVALID_SYNTAX - Usage: #6edit !command New response here`);
       return;
     }
 
     if (!editCommand(commandName, newResponse)) {
-      client.say(channel, `Command not found: ${commandName}`);
+      client.say(channel, `Error: COMMAND_NOT_FOUND - ${commandName}`);
       return;
     }
 
-    client.say(channel, `Updated command: ${commandName}`);
+    client.say(channel, `Success: COMMAND_UPDATED - ${commandName}`);
     return;
   }
 
@@ -364,16 +370,16 @@ client.on('message', (channel, tags, message, self) => {
     const commandName = parts[1];
 
     if (!commandName) {
-      client.say(channel, `Usage: #6del !command`);
+      client.say(channel, `Error: INVALID_SYNTAX - Usage: #6del !command`);
       return;
     }
 
     if (!deleteCommand(commandName)) {
-      client.say(channel, `Command not found: ${commandName}`);
+      client.say(channel, `Error: COMMAND_NOT_FOUND - ${commandName}`);
       return;
     }
 
-    client.say(channel, `Deleted command: ${commandName}`);
+    client.say(channel, `Success: COMMAND_DELETED - ${commandName}`);
     return;
   }
 
@@ -386,15 +392,20 @@ client.on('message', (channel, tags, message, self) => {
     if (found) {
       const { name, cmd } = found;
       
-      if (cmd.enabled === false) return;
+      if (cmd.enabled === false) {
+        client.say(channel, "Error: COMMAND_DISABLED");
+        return;
+      }
 
       const requiredLevel = cmd.userlevel || 'everyone';
       if (!hasPermission(requiredLevel, userLevels)) {
+        client.say(channel, "Error: INSUFFICIENT_PERMISSIONS");
         return;
       }
 
       const cooldownSeconds = cmd.cooldown || 0;
       if (isOnCooldown(name, cooldownSeconds)) {
+        client.say(channel, "Error: COMMAND_ON_COOLDOWN");
         return;
       }
 
@@ -404,13 +415,9 @@ client.on('message', (channel, tags, message, self) => {
       client.say(channel, response);
       setCooldown(name);
       return;
-    }
-
-    if (msgLower === '!commands') {
-      client.say(channel, `See available commands and admin tools at ${WEB_URL}`);
-      return;
-    }
-  }
+    } else {
+      // Command not found
+      client.say(channel, "Error: COMMAND_NOT_FOUND");
 
   // =========================
   // Greeting responses
