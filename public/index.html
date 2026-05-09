@@ -7,17 +7,19 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #09111f;
-      --panel: rgba(16, 24, 40, 0.95);
-      --surface: #111827;
-      --surface-soft: #1f2937;
-      --text: #e2e8f0;
+      --bg: #0a0f1c;
+      --panel: rgba(15, 23, 42, 0.98);
+      --surface: #1e293b;
+      --surface-soft: #334155;
+      --text: #f1f5f9;
       --muted: #94a3b8;
-      --primary: #6366f1;
-      --success: #22c55e;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
       --danger: #ef4444;
-      --border: rgba(148, 163, 184, 0.18);
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+      --border: rgba(148, 163, 184, 0.2);
+      --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+      --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     [data-theme="light"] {
@@ -39,10 +41,10 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at top, rgba(99, 102, 241, 0.18), transparent 26%),
-                  linear-gradient(180deg, #050911 0%, #0c1330 100%);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
       color: var(--text);
+      line-height: 1.6;
     }
 
     body::before {
@@ -63,29 +65,62 @@
 
     header {
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
       justify-content: space-between;
-      gap: 24px;
-      align-items: flex-start;
-      margin-bottom: 32px;
+      padding: 2rem 0 3rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
     }
 
     .brand {
-      display: grid;
-      gap: 14px;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
     }
 
-    .brand h1 {
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .logo-text h1 {
       margin: 0;
-      font-size: clamp(2.2rem, 2.4vw, 3rem);
+      font-size: 2.2rem;
+      font-weight: 700;
       letter-spacing: -0.04em;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .logo-text span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .brand p {
-      margin: 0;
-      max-width: 700px;
       color: var(--muted);
-      line-height: 1.7;
+      line-height: 1.6;
+      max-width: 400px;
+    }
     }
 
     .hero-badge {
@@ -273,19 +308,57 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      border-radius: 14px;
+      border-radius: 12px;
       border: none;
-      padding: 14px 18px;
+      padding: 12px 20px;
       font-size: 0.95rem;
+      font-weight: 500;
       cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     }
 
-    .button:hover { transform: translateY(-1px); }
-    .button.primary { background: linear-gradient(135deg, #818cf8, #4f46e5); color: white; }
-    .button.secondary { background: rgba(148, 163, 184, 0.12); color: #e2e8f0; }
-    .button.danger { background: #dc2626; color: white; }
-    .button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+    }
+
+    .button.primary {
+      background: var(--gradient);
+      color: white;
+    }
+
+    .button.primary:hover {
+      background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    .button.secondary {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .button.secondary:hover {
+      background: var(--surface-soft);
+      border-color: var(--primary);
+    }
+
+    .button.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .button.danger:hover {
+      background: #dc2626;
+    }
+
+    .button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
 
     .message {
       min-height: 26px;
@@ -299,36 +372,128 @@
     .tabs {
       display: flex;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      margin-bottom: 2rem;
+      background: var(--panel);
+      border-radius: 12px 12px 0 0;
+      padding: 0 1rem;
+      box-shadow: var(--shadow);
     }
 
     .tab-button {
       background: none;
       border: none;
-      padding: 12px 24px;
+      padding: 1rem 2rem;
       cursor: pointer;
       color: var(--muted);
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
-      font-size: 0.95rem;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s ease;
+      font-size: 1rem;
       font-weight: 500;
+      position: relative;
     }
 
     .tab-button.active {
-      color: var(--text);
+      color: var(--primary);
       border-bottom-color: var(--primary);
     }
 
     .tab-button:hover {
       color: var(--text);
-    }
-
-    .tab-content {
-      display: none;
+      background: rgba(59, 130, 246, 0.1);
     }
 
     .tab-content.active {
       display: block;
+    }
+
+    .discord-hero {
+      text-align: center;
+      padding: 3rem 2rem;
+      background: linear-gradient(135deg, rgba(88, 101, 242, 0.1), rgba(139, 92, 246, 0.1));
+      border-radius: 16px;
+      border: 1px solid rgba(88, 101, 242, 0.2);
+    }
+
+    .discord-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+
+    .discord-hero h2 {
+      margin: 0 0 1rem;
+      font-size: 2rem;
+      background: linear-gradient(135deg, #5865f2, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .discord-hero p {
+      color: var(--muted);
+      margin-bottom: 2rem;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .button.large {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .socials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .social-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .social-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.2);
+      border-color: var(--primary);
+    }
+
+    .social-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: var(--gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .social-content h3 {
+      margin: 0 0 0.25rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .social-content p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .announcement {
@@ -578,9 +743,14 @@
     </div>
     <header>
       <div class="brand">
-        <span class="hero-badge">Bot Control Center</span>
-        <h1>TimmySudo Command Dashboard</h1>
-        <p>Anyone with the link can view the dashboard and browse commands. Admin code is only required to add, edit, or delete commands.</p>
+        <div class="logo">
+          <div class="logo-icon">🤖</div>
+          <div class="logo-text">
+            <h1>TimmySudo</h1>
+            <span>Bot Control Center</span>
+          </div>
+        </div>
+        <p>Professional command management for Twitch streaming</p>
       </div>
       <div class="status-indicator status-connecting pulse" id="bot-status">
         <div class="loading"></div>
@@ -589,9 +759,6 @@
     </header>
 
     <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
-    <div class="theme-toggle">
-      <button id="theme-toggle" title="Toggle theme">🌙</button>
-    </div>
     <div class="keyboard-shortcuts" id="keyboard-shortcuts">
       <h4>Keyboard Shortcuts</h4>
       <div><kbd>Ctrl</kbd> + <kbd>F</kbd> Focus search</div>
@@ -722,22 +889,58 @@
 
       <div id="discord-tab" class="tab-content">
         <section class="panel">
-          <h2>Join Our Discord</h2>
-          <p>Connect with the community! Join our Discord server for updates, discussions, and more.</p>
-          <a href="https://discord.gg/fb3ZpTzFmC" target="_blank" class="button primary" style="margin-top: 16px;">Join Discord Server</a>
+          <div class="discord-hero">
+            <div class="discord-icon">💬</div>
+            <h2>Join Our Discord Community</h2>
+            <p>Connect with fellow viewers, get real-time updates, participate in giveaways, and be part of the TimmySudo community!</p>
+            <a href="https://discord.gg/fb3ZpTzFmC" target="_blank" class="button primary large">
+              <span>Join Discord Server</span>
+              <span>→</span>
+            </a>
+          </div>
         </section>
       </div>
 
       <div id="socials-tab" class="tab-content">
         <section class="panel">
-          <h2>Follow Us</h2>
-          <p>Stay connected on our social media platforms!</p>
-          <div style="display: grid; gap: 12px; margin-top: 16px;">
-            <a href="https://www.tiktok.com/@timmysudolive" target="_blank" class="button secondary">TikTok 🔥 😈</a>
-            <a href="https://www.instagram.com/timmysudo" target="_blank" class="button secondary">Instagram 📸</a>
-            <a href="https://x.com/TimmySudo" target="_blank" class="button secondary">X (Twitter) 🐦</a>
-            <a href="https://www.youtube.com/@TimmySudoLive" target="_blank" class="button secondary">YouTube 🔥</a>
-            <a href="https://open.spotify.com/artist/07ON8A07fRsgqvZGfhH0PU" target="_blank" class="button secondary">Spotify 🎧</a>
+          <h2>Follow TimmySudo</h2>
+          <p>Stay updated with the latest content across all platforms</p>
+          <div class="socials-grid">
+            <a href="https://www.tiktok.com/@timmysudolive" target="_blank" class="social-card">
+              <div class="social-icon">🎵</div>
+              <div class="social-content">
+                <h3>TikTok</h3>
+                <p>Daily content & live clips</p>
+              </div>
+            </a>
+            <a href="https://www.instagram.com/timmysudo" target="_blank" class="social-card">
+              <div class="social-icon">📸</div>
+              <div class="social-content">
+                <h3>Instagram</h3>
+                <p>Behind the scenes & photos</p>
+              </div>
+            </a>
+            <a href="https://x.com/TimmySudo" target="_blank" class="social-card">
+              <div class="social-icon">🐦</div>
+              <div class="social-content">
+                <h3>X (Twitter)</h3>
+                <p>Updates & announcements</p>
+              </div>
+            </a>
+            <a href="https://www.youtube.com/@TimmySudoLive" target="_blank" class="social-card">
+              <div class="social-icon">📺</div>
+              <div class="social-content">
+                <h3>YouTube</h3>
+                <p>Full streams & highlights</p>
+              </div>
+            </a>
+            <a href="https://open.spotify.com/artist/07ON8A07fRsgqvZGfhH0PU" target="_blank" class="social-card">
+              <div class="social-icon">🎧</div>
+              <div class="social-content">
+                <h3>Spotify</h3>
+                <p>Original music & podcasts</p>
+              </div>
+            </a>
           </div>
         </section>
       </div>
