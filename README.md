@@ -2,7 +2,7 @@
 
 Simple Twitch bot with a web admin UI.
 
-## Getting started
+## Getting startedd
 
 1. Install dependencies
    ```bash
