@@ -31,29 +31,37 @@ const ERROR_CODES = {
   UI_NOT_RESPONDING: 'UI_NOT_RESPONDING',
   UI_RENDER_ERROR: 'UI_RENDER_ERROR',
   UI_FETCH_ERROR: 'UI_FETCH_ERROR',
-  
+  UI_NAVIGATION_ERROR: 'UI_NAVIGATION_ERROR',
+  UI_PAGE_LOAD_ERROR: 'UI_PAGE_LOAD_ERROR',
+
   // Sync Errors (2xxx)
   SYNC_FAILED: 'SYNC_FAILED',
   SYNC_TIMEOUT: 'SYNC_TIMEOUT',
   COMMAND_NOT_SYNCED: 'COMMAND_NOT_SYNCED',
-  
+
   // File I/O Errors (3xxx)
   FILE_READ_ERROR: 'FILE_READ_ERROR',
   FILE_WRITE_ERROR: 'FILE_WRITE_ERROR',
   FILE_PARSE_ERROR: 'FILE_PARSE_ERROR',
   FILE_CORRUPTED: 'FILE_CORRUPTED',
-  
+  FILE_NOT_FOUND: 'FILE_NOT_FOUND',
+  FILE_PERMISSION_ERROR: 'FILE_PERMISSION_ERROR',
+
   // Bot Connection Errors (4xxx)
   BOT_DISCONNECTED: 'BOT_DISCONNECTED',
   BOT_CONNECT_FAILED: 'BOT_CONNECT_FAILED',
   BOT_NOT_RESPONDING: 'BOT_NOT_RESPONDING',
   BOT_AUTH_FAILED: 'BOT_AUTH_FAILED',
-  
+  BOT_RECONNECT_FAILED: 'BOT_RECONNECT_FAILED',
+  BOT_CHANNEL_JOIN_FAILED: 'BOT_CHANNEL_JOIN_FAILED',
+
   // API/Permission Errors (5xxx)
   ADMIN_CODE_REQUIRED: 'ADMIN_CODE_REQUIRED',
   INVALID_ADMIN_CODE: 'INVALID_ADMIN_CODE',
   INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
-  
+  API_RATE_LIMITED: 'API_RATE_LIMITED',
+  API_UNAUTHORIZED: 'API_UNAUTHORIZED',
+
   // Command Errors (6xxx)
   COMMAND_NOT_FOUND: 'COMMAND_NOT_FOUND',
   COMMAND_EXISTS: 'COMMAND_EXISTS',
@@ -61,11 +69,28 @@ const ERROR_CODES = {
   COMMAND_ON_COOLDOWN: 'COMMAND_ON_COOLDOWN',
   INVALID_SYNTAX: 'INVALID_SYNTAX',
   MISSING_FIELDS: 'MISSING_FIELDS',
-  
+  COMMAND_TOO_LONG: 'COMMAND_TOO_LONG',
+  COMMAND_INVALID_ALIAS: 'COMMAND_INVALID_ALIAS',
+
   // Server Errors (7xxx)
   INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
   DATABASE_ERROR: 'DATABASE_ERROR',
-  REQUEST_TIMEOUT: 'REQUEST_TIMEOUT'
+  REQUEST_TIMEOUT: 'REQUEST_TIMEOUT',
+  SERVER_OVERLOAD: 'SERVER_OVERLOAD',
+  PORT_ALREADY_IN_USE: 'PORT_ALREADY_IN_USE',
+  SERVER_START_FAILED: 'SERVER_START_FAILED',
+
+  // Greeting System Errors (8xxx)
+  GREETING_MEMORY_ERROR: 'GREETING_MEMORY_ERROR',
+  GREETING_RESET_FAILED: 'GREETING_RESET_FAILED',
+  GREETING_SPAM_DETECTED: 'GREETING_SPAM_DETECTED',
+
+  // Multi-Page Website Errors (9xxx)
+  PAGE_NOT_FOUND: 'PAGE_NOT_FOUND',
+  PAGE_LOAD_TIMEOUT: 'PAGE_LOAD_TIMEOUT',
+  NAVIGATION_FAILED: 'NAVIGATION_FAILED',
+  SOCIAL_LINK_INVALID: 'SOCIAL_LINK_INVALID',
+  DISCORD_JOIN_FAILED: 'DISCORD_JOIN_FAILED'
 };
 
 // =========================
@@ -80,10 +105,13 @@ function loadCommands() {
       console.log('Commands file not found, creating new one');
       customCommands = {};
     } else if (err instanceof SyntaxError) {
-      console.error(`Error parsing commands file: ${err.message}`);
+      console.error(`Error parsing commands file [FILE_PARSE_ERROR]: ${err.message}`);
+      customCommands = {};
+    } else if (err.code === 'EACCES') {
+      console.error(`Permission denied reading commands file [FILE_PERMISSION_ERROR]: ${err.message}`);
       customCommands = {};
     } else {
-      console.error(`File read error: ${err.message}`);
+      console.error(`File read error [FILE_READ_ERROR]: ${err.message}`);
       customCommands = {};
     }
   }
@@ -93,8 +121,16 @@ function saveCommands() {
   try {
     fs.writeFileSync(COMMANDS_FILE, JSON.stringify(customCommands, null, 2));
   } catch (err) {
-    console.error(`Failed to save commands: ${err.message}`);
-    throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'Could not save commands to file' };
+    if (err.code === 'EACCES') {
+      console.error(`Permission denied writing commands file [FILE_PERMISSION_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_PERMISSION_ERROR, message: 'Permission denied saving commands' };
+    } else if (err.code === 'ENOSPC') {
+      console.error(`No space left on device [FILE_WRITE_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'No space left on device' };
+    } else {
+      console.error(`Failed to save commands [FILE_WRITE_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'Could not save commands to file' };
+    }
   }
 }
 
@@ -107,10 +143,13 @@ function loadRoles() {
       console.log('Roles file not found, creating new one');
       roles = { trusted: [] };
     } else if (err instanceof SyntaxError) {
-      console.error(`Error parsing roles file: ${err.message}`);
+      console.error(`Error parsing roles file [FILE_PARSE_ERROR]: ${err.message}`);
+      roles = { trusted: [] };
+    } else if (err.code === 'EACCES') {
+      console.error(`Permission denied reading roles file [FILE_PERMISSION_ERROR]: ${err.message}`);
       roles = { trusted: [] };
     } else {
-      console.error(`File read error: ${err.message}`);
+      console.error(`File read error [FILE_READ_ERROR]: ${err.message}`);
       roles = { trusted: [] };
     }
   }
@@ -120,8 +159,16 @@ function saveRoles() {
   try {
     fs.writeFileSync(ROLES_FILE, JSON.stringify(roles, null, 2));
   } catch (err) {
-    console.error(`Failed to save roles: ${err.message}`);
-    throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'Could not save roles to file' };
+    if (err.code === 'EACCES') {
+      console.error(`Permission denied writing roles file [FILE_PERMISSION_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_PERMISSION_ERROR, message: 'Permission denied saving roles' };
+    } else if (err.code === 'ENOSPC') {
+      console.error(`No space left on device [FILE_WRITE_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'No space left on device' };
+    } else {
+      console.error(`Failed to save roles [FILE_WRITE_ERROR]: ${err.message}`);
+      throw { code: ERROR_CODES.FILE_WRITE_ERROR, message: 'Could not save roles to file' };
+    }
   }
 }
 
@@ -275,18 +322,42 @@ app.use((err, req, res, next) => {
   sendError(res, 500, 'Internal server error', ERROR_CODES.INTERNAL_SERVER_ERROR);
 });
 
-app.listen(WEB_PORT, WEB_HOST, () => {
+// Start server with error handling
+const server = app.listen(WEB_PORT, WEB_HOST, () => {
   console.log(`Web admin running on ${WEB_URL}`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${WEB_PORT} is already in use. Please kill the process using this port or choose a different port.`);
+    console.error(`Error code: ${ERROR_CODES.PORT_ALREADY_IN_USE}`);
+    process.exit(1);
+  } else if (err.code === 'EACCES') {
+    console.error(`Permission denied to bind to port ${WEB_PORT}. Try running with elevated privileges or choose a different port.`);
+    console.error(`Error code: ${ERROR_CODES.FILE_PERMISSION_ERROR}`);
+    process.exit(1);
+  } else {
+    console.error(`Server failed to start: ${err.message}`);
+    console.error(`Error code: ${ERROR_CODES.SERVER_START_FAILED}`);
+    process.exit(1);
+  }
+});
+
+server.on('listening', () => {
+  console.log(`Server successfully listening on ${WEB_HOST}:${WEB_PORT}`);
 });
 
 // =========================
 // Greeting memory (1 hour reset)
 // =========================
-let greetedUsers = new Set();
 
 setInterval(() => {
-  greetedUsers.clear();
-  console.log("Greeting memory reset (1 hour passed)");
+  try {
+    greetedUsers.clear();
+    console.log("Greeting memory reset (1 hour passed)");
+  } catch (err) {
+    console.error(`Greeting memory reset failed [GREETING_RESET_FAILED]: ${err.message}`);
+  }
 }, 3600000);
 
 // =========================
@@ -307,22 +378,29 @@ client.connect()
   })
   .catch((err) => {
     console.error(`Bot connection failed [BOT_CONNECT_FAILED]: ${err.message}`);
+    console.error('Please check your TWITCH_USERNAME and TWITCH_OAUTH environment variables');
     botConnected = false;
   });
 
 client.on('disconnected', (reason) => {
   console.error(`Bot disconnected [BOT_DISCONNECTED]: ${reason}`);
   botConnected = false;
-  console.log('Attempting to reconnect...');
+  console.log('Attempting to reconnect in 5 seconds...');
   setTimeout(() => {
-    client.connect().catch(err => console.error('Reconnection failed:', err));
+    client.connect().catch(err => {
+      console.error(`Reconnection failed [BOT_RECONNECT_FAILED]: ${err.message}`);
+    });
   }, 5000);
 });
 
 client.on('connected', () => {
   botConnected = true;
-  greetedUsers.clear(); // Reset greeted users for new stream session
-  console.log('Greeting memory reset (new stream session)');
+  try {
+    greetedUsers.clear(); // Reset greeted users for new stream session
+    console.log('Greeting memory reset (new stream session)');
+  } catch (err) {
+    console.error(`Greeting memory reset failed [GREETING_MEMORY_ERROR]: ${err.message}`);
+  }
 });
 
 // =========================
@@ -453,12 +531,22 @@ function deleteCommand(name) {
 // Message handler
 // =========================
 client.on('message', (channel, tags, message, self) => {
-  if (self) return;
+  if (self) return; // Don't respond to our own messages
 
   const username = tags['display-name'] || 'User';
   const msg = message.trim();
   const msgLower = msg.toLowerCase();
   const userLevels = getUserLevels(tags);
+
+  // Skip system messages, welcome messages, and other non-user messages
+  if (username.toLowerCase().includes('bot') ||
+      username.toLowerCase().includes('system') ||
+      msgLower.startsWith('welcome to') ||
+      msgLower.includes('joined the channel') ||
+      msgLower.includes('left the channel') ||
+      tags['message-type'] === 'system') {
+    return;
+  }
 
   // =========================
   // Command management (broadcaster/mod/trusted)
@@ -476,20 +564,22 @@ client.on('message', (channel, tags, message, self) => {
       const response = parts.slice(2).join(' ');
 
       if (!commandName || !response) {
-        client.say(channel, `Error: ${ERROR_CODES.INVALID_SYNTAX} - Usage: #6add !command Your message here`);
+        client.say(channel, `Usage: #6add !command Your message here`);
+        console.error(`[COMMAND_SYNTAX_ERROR]: Invalid syntax for #6add command`);
         return;
       }
 
       if (!addCommand(commandName, response)) {
-        client.say(channel, `Error: ${ERROR_CODES.COMMAND_EXISTS} - ${commandName}`);
+        client.say(channel, `Command already exists: ${commandName}`);
+        console.error(`[COMMAND_EXISTS_ERROR]: ${commandName} already exists`);
         return;
       }
 
       client.say(channel, `✓ Command added: ${commandName}`);
       return;
     } catch (err) {
-      client.say(channel, `Error: ${ERROR_CODES.SYNC_FAILED} - Could not create command`);
-      console.error('Add command error:', err);
+      client.say(channel, `Failed to create command. Please try again.`);
+      console.error(`[COMMAND_ADD_ERROR]: ${err.message}`);
     }
   }
 
@@ -501,20 +591,22 @@ client.on('message', (channel, tags, message, self) => {
       const newResponse = parts.slice(2).join(' ');
 
       if (!commandName || !newResponse) {
-        client.say(channel, `Error: ${ERROR_CODES.INVALID_SYNTAX} - Usage: #6edit !command New response here`);
+        client.say(channel, `Usage: #6edit !command New response here`);
+        console.error(`[COMMAND_SYNTAX_ERROR]: Invalid syntax for #6edit command`);
         return;
       }
 
       if (!editCommand(commandName, newResponse)) {
-        client.say(channel, `Error: ${ERROR_CODES.COMMAND_NOT_FOUND} - ${commandName}`);
+        client.say(channel, `Command not found: ${commandName}`);
+        console.error(`[COMMAND_NOT_FOUND_ERROR]: ${commandName} not found for editing`);
         return;
       }
 
       client.say(channel, `✓ Command updated: ${commandName}`);
       return;
     } catch (err) {
-      client.say(channel, `Error: ${ERROR_CODES.SYNC_FAILED} - Could not update command`);
-      console.error('Edit command error:', err);
+      client.say(channel, `Failed to update command. Please try again.`);
+      console.error(`[COMMAND_EDIT_ERROR]: ${err.message}`);
     }
   }
 
@@ -525,20 +617,22 @@ client.on('message', (channel, tags, message, self) => {
       const commandName = parts[1];
 
       if (!commandName) {
-        client.say(channel, `Error: ${ERROR_CODES.INVALID_SYNTAX} - Usage: #6del !command`);
+        client.say(channel, `Usage: #6del !command`);
+        console.error(`[COMMAND_SYNTAX_ERROR]: Invalid syntax for #6del command`);
         return;
       }
 
       if (!deleteCommand(commandName)) {
-        client.say(channel, `Error: ${ERROR_CODES.COMMAND_NOT_FOUND} - ${commandName}`);
+        client.say(channel, `Command not found: ${commandName}`);
+        console.error(`[COMMAND_NOT_FOUND_ERROR]: ${commandName} not found for deletion`);
         return;
       }
 
       client.say(channel, `✓ Command deleted: ${commandName}`);
       return;
     } catch (err) {
-      client.say(channel, `Error: ${ERROR_CODES.SYNC_FAILED} - Could not delete command`);
-      console.error('Delete command error:', err);
+      client.say(channel, `Failed to delete command. Please try again.`);
+      console.error(`[COMMAND_DELETE_ERROR]: ${err.message}`);
     }
   }
 
@@ -557,19 +651,22 @@ client.on('message', (channel, tags, message, self) => {
       const { name, cmd } = found;
       
       if (cmd.enabled === false) {
-        client.say(channel, `Error: ${ERROR_CODES.COMMAND_DISABLED}`);
+        client.say(channel, `Command disabled.`);
+        console.error(`[COMMAND_DISABLED_ERROR]: ${name} is disabled`);
         return;
       }
 
       const requiredLevel = cmd.userlevel || 'everyone';
       if (!hasPermission(requiredLevel, userLevels)) {
-        client.say(channel, `Error: ${ERROR_CODES.INSUFFICIENT_PERMISSIONS}`);
+        client.say(channel, `You don't have permission to use this command.`);
+        console.error(`[PERMISSION_ERROR]: ${username} lacks permission for ${name}`);
         return;
       }
 
       const cooldownSeconds = cmd.cooldown || 0;
       if (isOnCooldown(name, cooldownSeconds)) {
-        client.say(channel, `Error: ${ERROR_CODES.COMMAND_ON_COOLDOWN}`);
+        client.say(channel, `Command is on cooldown. Please wait.`);
+        console.error(`[COOLDOWN_ERROR]: ${username} triggered cooldown for ${name}`);
         return;
       }
 
@@ -577,23 +674,33 @@ client.on('message', (channel, tags, message, self) => {
       const response = parseVariables(cmd.response, cmd, context);
 
       // Special handling for greeting commands - only greet once per stream
-      if ((name === '!hello' || name === '!hi') && greetedUsers.has(username)) {
-        // User already greeted this stream, skip
-        return;
+      try {
+        if ((name === '!hello' || name === '!hi') && greetedUsers.has(username)) {
+          // User already greeted this stream, skip
+          return;
+        }
+      } catch (err) {
+        console.error(`Greeting check failed [GREETING_MEMORY_ERROR]: ${err.message}`);
+        // Continue with command execution even if greeting check fails
       }
 
       client.say(channel, response);
-      
+
       // Mark user as greeted for greeting commands
       if (name === '!hello' || name === '!hi') {
-        greetedUsers.add(username);
+        try {
+          greetedUsers.add(username);
+        } catch (err) {
+          console.error(`Greeting memory update failed [GREETING_MEMORY_ERROR]: ${err.message}`);
+        }
       }
-      
+
       setCooldown(name);
       return;
     } else {
       // Command not found
-      client.say(channel, `Error: ${ERROR_CODES.COMMAND_NOT_FOUND}`);
+      client.say(channel, `Command not found. Type !commands for help.`);
+      console.error(`[COMMAND_NOT_FOUND_ERROR]: ${msg} not found`);
       return;
     }
   }
@@ -613,14 +720,43 @@ client.on('message', (channel, tags, message, self) => {
     "greetings": `Greetings, ${username}!`
   };
 
-  if (!greetedUsers.has(username)) {
-    for (const greet in greetingResponses) {
-      if (msgLower.includes(greet)) {
-        client.say(channel, greetingResponses[greet]);
-        greetedUsers.add(username);
-        break;
+  // =========================
+  // Greeting responses
+  // =========================
+  try {
+    // Only respond to standalone greetings, not messages containing greeting words
+    if (!greetedUsers.has(username) &&
+        !msgLower.includes('error:') &&
+        !msgLower.includes('[ui_') &&
+        !msgLower.includes('[bot_') &&
+        !msgLower.includes('[file_') &&
+        !msgLower.includes('[api_') &&
+        !msgLower.includes('[command_') &&
+        !msgLower.includes('[server_') &&
+        !msgLower.includes('[greeting_') &&
+        !msgLower.includes('[page_')) {
+
+      // Check for standalone greetings (messages that are just greetings or start with greetings)
+      const standaloneGreetings = ['yo', 'hey', 'hi', 'hello', 'sup', 'hola', 'heyo', 'hiya'];
+      const isStandaloneGreeting = standaloneGreetings.some(greet =>
+        msgLower === greet ||
+        msgLower.startsWith(greet + ' ') ||
+        msgLower.startsWith(greet + '!') ||
+        msgLower.startsWith(greet + '?')
+      );
+
+      if (isStandaloneGreeting) {
+        for (const greet in greetingResponses) {
+          if (msgLower.startsWith(greet) || msgLower === greet) {
+            client.say(channel, greetingResponses[greet]);
+            greetedUsers.add(username);
+            break;
+          }
+        }
       }
     }
+  } catch (err) {
+    console.error(`Greeting system error [GREETING_MEMORY_ERROR]: ${err.message}`);
   }
 
   // =========================
@@ -640,4 +776,54 @@ client.on('message', (channel, tags, message, self) => {
 // =========================
 client.on('disconnected', (reason) => {
   console.log(`Disconnected from Twitch: ${reason}`);
+});
+
+// =========================
+// Graceful shutdown
+// =========================
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, shutting down gracefully...');
+  try {
+    if (server) {
+      server.close(() => {
+        console.log('HTTP server closed');
+      });
+    }
+    if (client && botConnected) {
+      client.disconnect();
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error(`Shutdown error: ${err.message}`);
+    process.exit(1);
+  }
+});
+
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, shutting down gracefully...');
+  try {
+    if (server) {
+      server.close(() => {
+        console.log('HTTP server closed');
+      });
+    }
+    if (client && botConnected) {
+      client.disconnect();
+    }
+    process.exit(0);
+  } catch (err) {
+    console.error(`Shutdown error: ${err.message}`);
+    process.exit(1);
+  }
+});
+
+process.on('uncaughtException', (err) => {
+  console.error(`Uncaught exception [INTERNAL_SERVER_ERROR]: ${err.message}`);
+  console.error(err.stack);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error(`Unhandled rejection [INTERNAL_SERVER_ERROR]: ${reason}`);
+  process.exit(1);
 });

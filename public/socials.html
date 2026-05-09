@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media - TimmySudo Bot Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+  <style>
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #1a1a1a;
+      --bg-tertiary: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #cccccc;
+      --text-muted: #888888;
+      --accent-primary: #ff6b6b;
+      --accent-secondary: #4ecdc4;
+      --accent-tertiary: #45b7d1;
+      --border-color: #333333;
+      --success-color: #51cf66;
+      --warning-color: #ffd43b;
+      --error-color: #ff6b6b;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --border-radius: 8px;
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+      transition: var(--transition);
+      font-weight: 500;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      color: var(--accent-primary);
+      background: rgba(255, 107, 107, 0.1);
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status-connected {
+      background: rgba(81, 207, 102, 0.1);
+      color: var(--success-color);
+    }
+
+    .status-connecting {
+      background: rgba(255, 212, 59, 0.1);
+      color: var(--warning-color);
+    }
+
+    .status-disconnected {
+      background: rgba(255, 107, 107, 0.1);
+      color: var(--error-color);
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .loading {
+      width: 8px;
+      height: 8px;
+      border: 2px solid currentColor;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Main Content */
+    .socials-content {
+      padding: 4rem 0;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .page-header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(45deg, var(--accent-primary), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .page-header p {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+    }
+
+    .socials-intro {
+      text-align: center;
+      margin-bottom: 3rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .socials-intro p {
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .socials-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .social-card {
+      background: var(--bg-tertiary);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      text-decoration: none;
+      color: var(--text-primary);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .social-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: var(--accent-primary);
+    }
+
+    .social-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+
+    .social-content h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-primary);
+    }
+
+    .social-content p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+
+    .social-link {
+      color: var(--accent-secondary);
+      font-weight: 500;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .social-link:hover {
+      color: var(--accent-primary);
+    }
+
+    .social-stats {
+      background: var(--bg-tertiary);
+      padding: 2rem;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--border-color);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .social-stats h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent-primary);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-item {
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: var(--border-radius);
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent-primary);
+      display: block;
+    }
+
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+    }
+
+    /* Buttons */
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--accent-primary);
+      color: white;
+      text-decoration: none;
+      border: none;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 1rem;
+    }
+
+    .button:hover {
+      background: #ff5252;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .button.secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .button.secondary:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--accent-primary);
+    }
+
+    .button.large {
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+
+    .back-to-home {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    /* Mobile Menu */
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav {
+        display: none;
+      }
+
+      .mobile-menu-toggle {
+        display: block;
+      }
+
+      .container {
+        padding: 10px;
+      }
+
+      .socials-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .page-header h1 {
+        font-size: 2rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">TimmySudo Bot</div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="commands.html" class="nav-link">Commands</a>
+        <a href="discord.html" class="nav-link">Discord</a>
+        <a href="socials.html" class="nav-link active">Socials</a>
+      </nav>
+      <div class="status-indicator status-connecting pulse" id="bot-status">
+        <div class="loading"></div>
+        Connecting...
+      </div>
+    </div>
+  </header>
+
+  <main class="container socials-content">
+    <div class="page-header">
+      <h1>Follow TimmySudo</h1>
+      <p>Stay updated with the latest content across all platforms</p>
+    </div>
+
+    <div class="socials-intro">
+      <p>Follow me on social media for daily updates, behind-the-scenes content, live streams, and exclusive community interactions. Don't miss out on the latest clips, announcements, and giveaways!</p>
+    </div>
+
+    <div class="socials-grid">
+      <a href="https://www.tiktok.com/@timmysudolive" target="_blank" class="social-card">
+        <div class="social-icon">🎵</div>
+        <div class="social-content">
+          <h3>TikTok</h3>
+          <p>Daily content & live clips from streams, gaming highlights, and community moments.</p>
+          <span class="social-link">@timmysudolive →</span>
+        </div>
+      </a>
+      <a href="https://www.instagram.com/timmysudo" target="_blank" class="social-card">
+        <div class="social-icon">📸</div>
+        <div class="social-content">
+          <h3>Instagram</h3>
+          <p>Behind the scenes photos, personal updates, and exclusive content previews.</p>
+          <span class="social-link">@timmysudo →</span>
+        </div>
+      </a>
+      <a href="https://x.com/TimmySudo" target="_blank" class="social-card">
+        <div class="social-icon">🐦</div>
+        <div class="social-content">
+          <h3>X (Twitter)</h3>
+          <p>Real-time updates, announcements, and community engagement.</p>
+          <span class="social-link">@TimmySudo →</span>
+        </div>
+      </a>
+      <a href="https://www.youtube.com/@TimmySudoLive" target="_blank" class="social-card">
+        <div class="social-icon">📺</div>
+        <div class="social-content">
+          <h3>YouTube</h3>
+          <p>Full stream archives, highlights, and exclusive video content.</p>
+          <span class="social-link">@TimmySudoLive →</span>
+        </div>
+      </a>
+      <a href="https://open.spotify.com/artist/07ON8A07fRsgqvZGfhH0PU" target="_blank" class="social-card">
+        <div class="social-icon">🎧</div>
+        <div class="social-content">
+          <h3>Spotify</h3>
+          <p>Original music, podcasts, and audio content from the community.</p>
+          <span class="social-link">TimmySudo →</span>
+        </div>
+      </a>
+    </div>
+
+    <div class="social-stats">
+      <h3>Community Stats</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-number">10K+</span>
+          <span class="stat-label">TikTok Followers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">5K+</span>
+          <span class="stat-label">Instagram Followers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">2K+</span>
+          <span class="stat-label">X Followers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">1K+</span>
+          <span class="stat-label">YouTube Subscribers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Discord Members</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">24/7</span>
+          <span class="stat-label">Bot Uptime</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="back-to-home">
+      <a href="index.html" class="button secondary large">← Back to Home</a>
+    </div>
+  </main>
+
+  <script>
+    // Check bot status
+    async function checkBotStatus() {
+      try {
+        const response = await fetch('/api/status');
+        const status = await response.json();
+        const statusIndicator = document.getElementById('bot-status');
+
+        if (status.connected) {
+          statusIndicator.className = 'status-indicator status-connected';
+          statusIndicator.innerHTML = '🟢 Connected';
+        } else {
+          statusIndicator.className = 'status-indicator status-disconnected';
+          statusIndicator.innerHTML = '🔴 Disconnected';
+        }
+      } catch (error) {
+        console.error('Failed to check bot status:', error);
+      }
+    }
+
+    // Initialize
+    checkBotStatus();
+  </script>
+</body>
+</html>
