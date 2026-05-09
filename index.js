@@ -116,6 +116,7 @@ app.post('/api/commands', requireAdminCode, (req, res) => {
 
   customCommands[name] = { response, cooldown, userlevel, aliases, count: 0, enabled };
   saveCommands();
+  loadCommands(); // Reload commands to sync with file
   res.status(201).json({ name, command: customCommands[name] });
 });
 
@@ -132,6 +133,7 @@ app.put('/api/commands/:name', requireAdminCode, (req, res) => {
   if (enabled !== undefined) cmd.enabled = enabled;
 
   saveCommands();
+  loadCommands(); // Reload commands to sync with file
   res.json({ name, command: cmd });
 });
 
@@ -140,6 +142,7 @@ app.delete('/api/commands/:name', requireAdminCode, (req, res) => {
   if (!customCommands[name]) return sendError(res, 404, 'Command not found', 'COMMAND_NOT_FOUND');
   delete customCommands[name];
   saveCommands();
+  loadCommands(); // Reload commands to sync with file
   res.json({ deleted: name });
 });
 
