@@ -171,14 +171,14 @@ app.post('/api/auth', (req, res) => {
     return sendError(res, 400, 'Admin code is required', ERROR_CODES.MISSING_FIELDS);
   }
   if (code === ADMIN_CODE) {
-    return res.json({ success: true, code: 'AUTH_SUCCESS' });
+    return res.json({ success: true });
   }
   return sendError(res, 401, 'Invalid admin code', ERROR_CODES.INVALID_ADMIN_CODE);
 });
 
 app.get('/api/commands', (req, res) => {
   try {
-    res.json({ commands: customCommands, code: 'FETCH_SUCCESS' });
+    res.json(customCommands);
   } catch (err) {
     return sendError(res, 500, 'Failed to fetch commands', ERROR_CODES.UI_FETCH_ERROR);
   }
@@ -189,7 +189,7 @@ app.get('/api/commands/:name', (req, res) => {
     const name = decodeURIComponent(req.params.name);
     const cmd = customCommands[name];
     if (!cmd) return sendError(res, 404, 'Command not found', ERROR_CODES.COMMAND_NOT_FOUND);
-    res.json({ command: cmd, code: 'FETCH_SUCCESS' });
+    res.json(cmd);
   } catch (err) {
     return sendError(res, 500, 'Error retrieving command', ERROR_CODES.UI_FETCH_ERROR);
   }
@@ -209,7 +209,7 @@ app.post('/api/commands', requireAdminCode, (req, res) => {
     customCommands[name] = { response, cooldown, userlevel, aliases, count: 0, enabled };
     saveCommands();
     loadCommands(); // Reload commands to sync with file
-    res.status(201).json({ name, command: customCommands[name], code: 'COMMAND_CREATED' });
+    res.status(201).json({ success: true, name, command: customCommands[name] });
   } catch (err) {
     if (err.code === ERROR_CODES.FILE_WRITE_ERROR) {
       return sendError(res, 500, 'Failed to save command - file error', ERROR_CODES.SYNC_FAILED);
@@ -233,7 +233,7 @@ app.put('/api/commands/:name', requireAdminCode, (req, res) => {
 
     saveCommands();
     loadCommands(); // Reload commands to sync with file
-    res.json({ name, command: cmd, code: 'COMMAND_UPDATED' });
+    res.json({ success: true, name, command: cmd });
   } catch (err) {
     if (err.code === ERROR_CODES.FILE_WRITE_ERROR) {
       return sendError(res, 500, 'Failed to save command - file error', ERROR_CODES.SYNC_FAILED);
@@ -249,7 +249,7 @@ app.delete('/api/commands/:name', requireAdminCode, (req, res) => {
     delete customCommands[name];
     saveCommands();
     loadCommands(); // Reload commands to sync with file
-    res.json({ deleted: name, code: 'COMMAND_DELETED' });
+    res.json({ success: true, deleted: name });
   } catch (err) {
     if (err.code === ERROR_CODES.FILE_WRITE_ERROR) {
       return sendError(res, 500, 'Failed to delete command - file error', ERROR_CODES.SYNC_FAILED);
