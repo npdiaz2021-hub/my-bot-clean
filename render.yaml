@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: timmysudo-bot
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEB_HOST
+        value: 0.0.0.0
+      - key: WEB_PORT
+        value: 10000
+    autoDeploy: true

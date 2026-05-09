@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler dev"
+    "dev": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
@@ -17,8 +16,5 @@
     "dotenv": "^17.4.2",
     "express": "^4.22.1",
     "tmi.js": "^1.8.5"
-  },
-  "devDependencies": {
-    "wrangler": "^4.90.0"
   }
 }
