@@ -19,6 +19,7 @@ const ROLES_FILE = path.join(__dirname, 'roles.json');
 let customCommands = {};
 let roles = { trusted: [] };
 let cooldowns = {}; // { commandName: timestamp }
+let botConnected = false;
 
 // =========================
 // Error codes reference
@@ -141,7 +142,7 @@ function getLocalIPAddress() {
 // =========================
 // Web admin UI
 // =========================
-const app = express();
+const hhapp = express();
 const WEB_PORT = process.env.PORT || process.env.WEB_PORT || 61234;
 const WEB_HOST = process.env.WEB_HOST || '0.0.0.0';
 const ADMIN_CODE = process.env.ADMIN_CODE || 'streamadmin';
@@ -174,6 +175,15 @@ app.post('/api/auth', (req, res) => {
     return res.json({ success: true });
   }
   return sendError(res, 401, 'Invalid admin code', ERROR_CODES.INVALID_ADMIN_CODE);
+});
+
+app.get('/api/status', (req, res) => {
+  res.json({
+    connected: botConnected,
+    uptime: process.uptime(),
+    commands: Object.keys(customCommands).length,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.get('/api/commands', (req, res) => {
@@ -292,17 +302,24 @@ const client = new tmi.Client({
 client.connect()
   .then(() => {
     console.log(`Connected to Twitch as ${process.env.TWITCH_USERNAME}`);
+    botConnected = true;
   })
   .catch((err) => {
     console.error(`Bot connection failed [BOT_CONNECT_FAILED]: ${err.message}`);
+    botConnected = false;
   });
 
 client.on('disconnected', (reason) => {
   console.error(`Bot disconnected [BOT_DISCONNECTED]: ${reason}`);
+  botConnected = false;
   console.log('Attempting to reconnect...');
   setTimeout(() => {
     client.connect().catch(err => console.error('Reconnection failed:', err));
   }, 5000);
+});
+
+client.on('connected', () => {
+  botConnected = true;
 });
 
 // =========================

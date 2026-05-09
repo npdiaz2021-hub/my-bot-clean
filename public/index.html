@@ -20,6 +20,21 @@
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
     }
 
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg: #f8fafc;
+      --panel: rgba(255, 255, 255, 0.95);
+      --surface: #f1f5f9;
+      --surface-soft: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #6366f1;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --border: rgba(148, 163, 184, 0.3);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.1);
+    }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -331,9 +346,217 @@
       display: none !important;
     }
 
-    @media (max-width: 980px) {
-      .columns { grid-template-columns: 1fr; }
-      .table-scroll { min-width: auto; }
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .status-online {
+      background: rgba(34, 197, 94, 0.15);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-offline {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-connecting {
+      background: rgba(251, 191, 36, 0.15);
+      color: #fcd34d;
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+
+    .pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .command-row {
+      transition: background-color 0.2s ease;
+    }
+
+    .command-row:hover {
+      background: rgba(148, 163, 184, 0.06);
+    }
+
+    .bulk-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .checkbox-cell {
+      width: 40px;
+      text-align: center;
+    }
+
+    .checkbox-cell input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #6366f1;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    .theme-toggle button {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle button:hover {
+      background: var(--surface);
+      transform: scale(1.05);
+    }
+
+    .keyboard-shortcuts {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      max-width: 280px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      display: none;
+    }
+
+    .keyboard-shortcuts.show {
+      display: block;
+    }
+
+    .keyboard-shortcuts h4 {
+      margin: 0 0 8px 0;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .keyboard-shortcuts kbd {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin: 0 2px;
+    }
+
+    .export-import {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-input-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+
+    .file-input-label:hover {
+      background: rgba(148, 163, 184, 0.1);
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      border: none;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu-toggle { display: flex; align-items: center; justify-content: center; }
+      .theme-toggle { top: 20px; right: 80px; }
+      .keyboard-shortcuts { display: none !important; }
+      .bulk-actions, .export-import { flex-direction: column; align-items: stretch; }
+      .action-buttons { flex-direction: column; }
+      .action-buttons button { width: 100%; }
     }
   </style>
 </head>
@@ -352,7 +575,23 @@
         <h1>TimmySudo Command Dashboard</h1>
         <p>Anyone with the link can view the dashboard and browse commands. Admin code is only required to add, edit, or delete commands.</p>
       </div>
+      <div class="status-indicator status-connecting pulse" id="bot-status">
+        <div class="loading"></div>
+        Connecting...
+      </div>
     </header>
+
+    <button class="mobile-menu-toggle" id="mobile-menu-toggle">☰</button>
+    <div class="theme-toggle">
+      <button id="theme-toggle" title="Toggle theme">🌙</button>
+    </div>
+    <div class="keyboard-shortcuts" id="keyboard-shortcuts">
+      <h4>Keyboard Shortcuts</h4>
+      <div><kbd>Ctrl</kbd> + <kbd>F</kbd> Focus search</div>
+      <div><kbd>Ctrl</kbd> + <kbd>N</kbd> New command</div>
+      <div><kbd>Esc</kbd> Cancel/Close</div>
+      <div><kbd>Ctrl</kbd> + <kbd>S</kbd> Save command</div>
+    </div>
 
     <div class="columns">
       <section class="panel">
@@ -437,6 +676,20 @@
     </div>
 
     <section class="panel" style="margin-top: 24px;">
+      <div class="export-import">
+        <button id="export-commands" class="button secondary">📥 Export Commands</button>
+        <label class="file-input-label">
+          📤 Import Commands
+          <input type="file" id="import-commands" class="file-input" accept=".json">
+        </label>
+        <button id="refresh-commands" class="button secondary">🔄 Refresh</button>
+      </div>
+      <div class="bulk-actions" id="bulk-actions" style="display: none;">
+        <span id="selected-count">0 selected</span>
+        <button id="bulk-enable" class="button secondary">Enable Selected</button>
+        <button id="bulk-disable" class="button secondary">Disable Selected</button>
+        <button id="bulk-delete" class="button danger">Delete Selected</button>
+      </div>
       <div class="search-bar">
         <input id="search-table" placeholder="Search and filter commands" />
       </div>
@@ -444,6 +697,7 @@
         <table id="commands-table">
           <thead>
             <tr>
+              <th class="checkbox-cell"><input type="checkbox" id="select-all"></th>
               <th>Command</th>
               <th>Response</th>
               <th>Aliases</th>
@@ -479,11 +733,26 @@
     const statTotal = document.querySelector('#stat-total');
     const statEnabled = document.querySelector('#stat-enabled');
     const statDisabled = document.querySelector('#stat-disabled');
+    const botStatus = document.querySelector('#bot-status');
+    const themeToggle = document.querySelector('#theme-toggle');
+    const mobileMenuToggle = document.querySelector('#mobile-menu-toggle');
+    const keyboardShortcuts = document.querySelector('#keyboard-shortcuts');
+    const exportBtn = document.querySelector('#export-commands');
+    const importInput = document.querySelector('#import-commands');
+    const refreshBtn = document.querySelector('#refresh-commands');
+    const selectAllCheckbox = document.querySelector('#select-all');
+    const bulkActions = document.querySelector('#bulk-actions');
+    const selectedCount = document.querySelector('#selected-count');
+    const bulkEnableBtn = document.querySelector('#bulk-enable');
+    const bulkDisableBtn = document.querySelector('#bulk-disable');
+    const bulkDeleteBtn = document.querySelector('#bulk-delete');
     let editMode = false;
     let editName = null;
     let isAuthenticated = false;
     let adminCode = null;
     let allCommands = {};
+    let selectedCommands = new Set();
+    let currentTheme = localStorage.getItem('theme') || 'dark';
 
     function showMessage(text, isError = false) {
       messageEl.textContent = text;
@@ -588,15 +857,26 @@
     function renderCommands() {
       updateStats();
       tableBody.innerHTML = '';
-      filterCommands().sort(([a], [b]) => a.localeCompare(b)).forEach(([name, cmd]) => {
+      const visibleCommands = filterCommands();
+      const allSelected = visibleCommands.length > 0 && visibleCommands.every(([name]) => selectedCommands.has(name));
+      selectAllCheckbox.checked = allSelected;
+
+      visibleCommands.sort(([a], [b]) => a.localeCompare(b)).forEach(([name, cmd]) => {
+        const isSelected = selectedCommands.has(name);
         const status = cmd.enabled === false ? '<span class="tag danger">Disabled</span>' : '<span class="tag success">Enabled</span>';
         const actionButtons = isAuthenticated
-          ? `<button class="button secondary" data-action="edit" data-name="${encodeURIComponent(name)}">Edit</button>
-             <button class="button danger" data-action="delete" data-name="${encodeURIComponent(name)}">Delete</button>`
+          ? `<div class="action-buttons">
+              <button class="button secondary" data-action="edit" data-name="${encodeURIComponent(name)}">Edit</button>
+              <button class="button danger" data-action="delete" data-name="${encodeURIComponent(name)}">Delete</button>
+             </div>`
           : '<span class="tag muted">Locked</span>';
 
         const row = document.createElement('tr');
+        row.className = 'command-row fade-in';
         row.innerHTML = `
+          <td class="checkbox-cell">
+            <input type="checkbox" data-name="${encodeURIComponent(name)}" ${isSelected ? 'checked' : ''}>
+          </td>
           <td>${name}</td>
           <td>${cmd.response.replace(/</g, '&lt;')}</td>
           <td>${formatAliases(cmd.aliases)}</td>
@@ -613,6 +893,175 @@
     async function loadCommands() {
       allCommands = await requestJson('/api/commands');
       renderCommands();
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+      themeToggle.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+      themeToggle.title = `Switch to ${currentTheme === 'dark' ? 'light' : 'dark'} mode`;
+    }
+
+    function applyTheme() {
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      themeToggle.textContent = currentTheme === 'dark' ? '🌙' : '☀️';
+    }
+
+    async function checkBotStatus() {
+      try {
+        const response = await fetch('/api/status');
+        if (response.ok) {
+          const data = await response.json();
+          updateBotStatus(data.connected ? 'online' : 'offline', data.connected ? 'Connected' : 'Disconnected');
+        } else {
+          updateBotStatus('offline', 'Status Unknown');
+        }
+      } catch (err) {
+        updateBotStatus('offline', 'Connection Failed');
+      }
+    }
+
+    function updateBotStatus(status, text) {
+      botStatus.className = `status-indicator status-${status}`;
+      botStatus.innerHTML = status === 'connecting' ? '<div class="loading"></div> Connecting...' : text;
+      if (status === 'connecting') {
+        botStatus.classList.add('pulse');
+      } else {
+        botStatus.classList.remove('pulse');
+      }
+    }
+
+    function exportCommands() {
+      const dataStr = JSON.stringify(allCommands, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      const exportFileDefaultName = `commands-${new Date().toISOString().split('T')[0]}.json`;
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      showMessage('Commands exported successfully');
+    }
+
+    function importCommands(file) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const importedCommands = JSON.parse(e.target.result);
+          if (!isAuthenticated) {
+            showMessage('Admin access required to import commands', true);
+            return;
+          }
+          for (const [name, cmd] of Object.entries(importedCommands)) {
+            await requestJson('/api/commands', {
+              method: 'POST',
+              headers: getAuthHeaders(),
+              body: JSON.stringify({ name, ...cmd })
+            });
+          }
+          showMessage('Commands imported successfully');
+          loadCommands();
+        } catch (err) {
+          showMessage('Failed to import commands: Invalid file format', true);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function updateBulkActions() {
+      const count = selectedCommands.size;
+      selectedCount.textContent = `${count} selected`;
+      bulkActions.style.display = count > 0 ? 'flex' : 'none';
+    }
+
+    function toggleCommandSelection(name, selected) {
+      if (selected) {
+        selectedCommands.add(name);
+      } else {
+        selectedCommands.delete(name);
+      }
+      updateBulkActions();
+    }
+
+    function toggleSelectAll() {
+      const visibleCommands = filterCommands();
+      const allSelected = visibleCommands.every(([name]) => selectedCommands.has(name));
+      if (allSelected) {
+        visibleCommands.forEach(([name]) => selectedCommands.delete(name));
+      } else {
+        visibleCommands.forEach(([name]) => selectedCommands.add(name));
+      }
+      selectAllCheckbox.checked = !allSelected;
+      renderCommands();
+      updateBulkActions();
+    }
+
+    async function bulkEnableCommands(enable) {
+      if (!isAuthenticated || selectedCommands.size === 0) return;
+      try {
+        for (const name of selectedCommands) {
+          await requestJson(`/api/commands/${encodeURIComponent(name)}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify({ ...allCommands[name], enabled: enable })
+          });
+        }
+        selectedCommands.clear();
+        showMessage(`${selectedCommands.size} commands ${enable ? 'enabled' : 'disabled'}`);
+        loadCommands();
+      } catch (err) {
+        showMessage('Bulk operation failed', true);
+      }
+    }
+
+    async function bulkDeleteCommands() {
+      if (!isAuthenticated || selectedCommands.size === 0) return;
+      if (!confirm(`Delete ${selectedCommands.size} selected commands?`)) return;
+      try {
+        for (const name of selectedCommands) {
+          await requestJson(`/api/commands/${encodeURIComponent(name)}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders()
+          });
+        }
+        selectedCommands.clear();
+        showMessage(`${selectedCommands.size} commands deleted`);
+        loadCommands();
+      } catch (err) {
+        showMessage('Bulk delete failed', true);
+      }
+    }
+
+    function handleKeyboardShortcuts(event) {
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key.toLowerCase()) {
+          case 'f':
+            event.preventDefault();
+            searchTableInput.focus();
+            break;
+          case 'n':
+            event.preventDefault();
+            if (isAuthenticated) {
+              setForm();
+              document.querySelector('#name').focus();
+            }
+            break;
+          case 's':
+            event.preventDefault();
+            if (isAuthenticated && editMode) {
+              form.dispatchEvent(new Event('submit'));
+            }
+            break;
+        }
+      } else if (event.key === 'Escape') {
+        if (editMode) {
+          setForm();
+        } else if (keyboardShortcuts.classList.contains('show')) {
+          keyboardShortcuts.classList.remove('show');
+        }
+      } else if (event.key === '?' && !event.ctrlKey && !event.metaKey) {
+        keyboardShortcuts.classList.toggle('show');
+      }
     }
 
     tableBody.addEventListener('click', async (event) => {
@@ -699,6 +1148,41 @@
     searchInput.addEventListener('input', renderCommands);
     searchTableInput.addEventListener('input', renderCommands);
 
+    // New event listeners
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileMenuToggle.addEventListener('click', () => {
+      keyboardShortcuts.classList.toggle('show');
+    });
+    exportBtn.addEventListener('click', exportCommands);
+    importInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        importCommands(e.target.files[0]);
+      }
+    });
+    refreshBtn.addEventListener('click', () => {
+      loadCommands();
+      checkBotStatus();
+      showMessage('Refreshed');
+    });
+    selectAllCheckbox.addEventListener('change', toggleSelectAll);
+    bulkEnableBtn.addEventListener('click', () => bulkEnableCommands(true));
+    bulkDisableBtn.addEventListener('click', () => bulkEnableCommands(false));
+    bulkDeleteBtn.addEventListener('click', bulkDeleteCommands);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', handleKeyboardShortcuts);
+
+    // Checkbox handling in table
+    tableBody.addEventListener('change', (event) => {
+      if (event.target.type === 'checkbox') {
+        const name = decodeURIComponent(event.target.dataset.name);
+        toggleCommandSelection(name, event.target.checked);
+      }
+    });
+
+    // Periodic status checks
+    setInterval(checkBotStatus, 30000); // Check every 30 seconds
+
     function setForm(data = null) {
       if (!data) {
         editMode = false;
@@ -731,6 +1215,12 @@
         logout();
       }
     }
+
+    // Initialize theme
+    applyTheme();
+
+    // Initial bot status check
+    checkBotStatus();
 
     tryRestoreSession();
     loadCommands();
