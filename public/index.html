@@ -504,35 +504,6 @@
       margin: 0 2px;
     }
 
-    .export-import {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
-    }
-
-    .file-input {
-      display: none;
-    }
-
-    .file-input-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 8px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-    }
-
-    .file-input-label:hover {
-      background: rgba(148, 163, 184, 0.1);
-    }
-
     .mobile-menu-toggle {
       display: none;
       position: fixed;
@@ -554,7 +525,7 @@
       .mobile-menu-toggle { display: flex; align-items: center; justify-content: center; }
       .theme-toggle { top: 20px; right: 80px; }
       .keyboard-shortcuts { display: none !important; }
-      .bulk-actions, .export-import { flex-direction: column; align-items: stretch; }
+      .bulk-actions { flex-direction: column; align-items: stretch; }
       .action-buttons { flex-direction: column; }
       .action-buttons button { width: 100%; }
     }
@@ -676,14 +647,6 @@
     </div>
 
     <section class="panel" style="margin-top: 24px;">
-      <div class="export-import">
-        <button id="export-commands" class="button secondary">📥 Export Commands</button>
-        <label class="file-input-label">
-          📤 Import Commands
-          <input type="file" id="import-commands" class="file-input" accept=".json">
-        </label>
-        <button id="refresh-commands" class="button secondary">🔄 Refresh</button>
-      </div>
       <div class="bulk-actions" id="bulk-actions" style="display: none;">
         <span id="selected-count">0 selected</span>
         <button id="bulk-enable" class="button secondary">Enable Selected</button>
@@ -737,8 +700,6 @@
     const themeToggle = document.querySelector('#theme-toggle');
     const mobileMenuToggle = document.querySelector('#mobile-menu-toggle');
     const keyboardShortcuts = document.querySelector('#keyboard-shortcuts');
-    const exportBtn = document.querySelector('#export-commands');
-    const importInput = document.querySelector('#import-commands');
     const refreshBtn = document.querySelector('#refresh-commands');
     const selectAllCheckbox = document.querySelector('#select-all');
     const bulkActions = document.querySelector('#bulk-actions');
@@ -932,42 +893,6 @@
       }
     }
 
-    function exportCommands() {
-      const dataStr = JSON.stringify(allCommands, null, 2);
-      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-      const exportFileDefaultName = `commands-${new Date().toISOString().split('T')[0]}.json`;
-      const linkElement = document.createElement('a');
-      linkElement.setAttribute('href', dataUri);
-      linkElement.setAttribute('download', exportFileDefaultName);
-      linkElement.click();
-      showMessage('Commands exported successfully');
-    }
-
-    function importCommands(file) {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const importedCommands = JSON.parse(e.target.result);
-          if (!isAuthenticated) {
-            showMessage('Admin access required to import commands', true);
-            return;
-          }
-          for (const [name, cmd] of Object.entries(importedCommands)) {
-            await requestJson('/api/commands', {
-              method: 'POST',
-              headers: getAuthHeaders(),
-              body: JSON.stringify({ name, ...cmd })
-            });
-          }
-          showMessage('Commands imported successfully');
-          loadCommands();
-        } catch (err) {
-          showMessage('Failed to import commands: Invalid file format', true);
-        }
-      };
-      reader.readAsText(file);
-    }
-
     function updateBulkActions() {
       const count = selectedCommands.size;
       selectedCount.textContent = `${count} selected`;
@@ -1152,12 +1077,6 @@
     themeToggle.addEventListener('click', toggleTheme);
     mobileMenuToggle.addEventListener('click', () => {
       keyboardShortcuts.classList.toggle('show');
-    });
-    exportBtn.addEventListener('click', exportCommands);
-    importInput.addEventListener('change', (e) => {
-      if (e.target.files[0]) {
-        importCommands(e.target.files[0]);
-      }
     });
     refreshBtn.addEventListener('click', () => {
       loadCommands();
