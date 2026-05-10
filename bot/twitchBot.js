@@ -196,7 +196,13 @@ class TwitchBot {
     });
 
     this.client.on('message', (channel, tags, message, self) => {
+      // Enhanced self-check: ignore bot's own messages
       if (self) return;
+      
+      const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
+      const senderUsername = cleanUsername(tags.username || tags['display-name']);
+      if (senderUsername === botUsername) return;
+      
       this.handleMessage(channel, tags, message).catch((err) => {
         this.logger.warn(`Twitch message skipped: ${err.message}`);
       });
@@ -206,6 +212,11 @@ class TwitchBot {
   async handleMessage(channel, tags, message) {
     const rawMessage = String(message || '').trim();
     if (!rawMessage || this.shouldIgnoreMessage(tags, rawMessage)) return;
+
+    // Additional check: ignore bot's own messages
+    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
+    const senderUsername = cleanUsername(tags.username || tags['display-name']);
+    if (senderUsername === botUsername) return;
 
     this.lastMessageAt = new Date().toISOString();
 
@@ -224,6 +235,10 @@ class TwitchBot {
     }
 
     await this.handleGreeting(channel, tags, msgLower);
+
+    // Extra: some channels post achievements/sub phrases as plain chat text.
+    // If we see one of the known phrases, reply "Yo <username>" once per stream.
+    await this.handleAchievementYo(channel, tags, msgLower);
   }
 
   shouldIgnoreMessage(tags, message) {
@@ -454,24 +469,51 @@ class TwitchBot {
     }
   }
 
+  async handleAchievementYo(channel, tags, msgLower) {
+    // Keep this best-effort and light: only trigger if message text contains one
+    // of the known achievement/sub-badge phrases.
+    const patterns = [
+      'lead moderator',
+      '4-month subscriber',
+      '3-month badge',
+      '7 day survival'
+    ];
+
+    const hit = patterns.some((p) => msgLower.includes(p));
+    if (!hit) return;
+    if (process.env.TWITCH_GREETING_ENABLED === 'false') return;
+
+    // Don't respond to bot's own messages
+    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
+    const senderUsername = cleanUsername(tags.username || tags['display-name']);
+    if (senderUsername === botUsername) return;
+
+    const username = getDisplayName(tags);
+    const key = `achievement-yo:${cleanUsername(tags.username || tags['display-name'])}`;
+    if (this.greetedUsers.has(key)) return;
+
+    await this.say(channel, `Yo ${username}`);
+    this.greetedUsers.add(key);
+  }
+
   async handleGreeting(channel, tags, msgLower) {
     if (process.env.TWITCH_GREETING_ENABLED === 'false') return;
 
     const greeting = isStandaloneGreeting(msgLower);
     if (!greeting) return;
 
-    // Don't greet the bot itself - use user-id for reliability
+    // Don't greet the bot itself - compare both user-id and username
     const botUserId = String(process.env.TWITCH_BOT_USER_ID || '').toLowerCase();
-    const senderId = String(tags['user-id'] || '').toLowerCase();
-    if (senderId && senderId === botUserId) return;
-
-    // Fallback: also check username if user-id is not available
     const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
+    const senderId = String(tags['user-id'] || '').toLowerCase();
     const senderUsername = cleanUsername(tags.username);
-    if (!senderId && senderUsername === botUsername) return;
+
+    // Check if this is the bot's own message
+    const isBotMessage = (senderId && senderId === botUserId) || (senderUsername === botUsername);
+    if (isBotMessage) return;
 
     const username = getDisplayName(tags);
-    const key = senderId || senderUsername;
+    const key = cleanUsername(tags.username || tags['display-name']);
     if (this.greetedUsers.has(key)) return;
 
     const responses = {
