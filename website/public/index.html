@@ -2710,6 +2710,15 @@
     /* Professional scale pass: tighter, calmer, dashboard-first */
     .side {
       padding: 12px 28px;
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .side .brand {
+      display: none;
+    }
+
+    .side .nav {
+      justify-self: start;
     }
 
     .mark {
