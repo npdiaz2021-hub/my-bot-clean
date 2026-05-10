@@ -22,6 +22,7 @@
       --focus: #a7dcff;
       --shadow: 0 24px 80px rgba(0, 0, 0, .34);
       --soft-shadow: 0 12px 35px rgba(0, 0, 0, .22);
+      --inset: inset 0 1px 0 rgba(255, 255, 255, .04);
     }
 
     * { box-sizing: border-box; }
@@ -68,7 +69,7 @@
       border-right: 1px solid var(--line);
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 24px;
+      gap: 22px;
     }
 
     .brand {
@@ -88,6 +89,16 @@
       color: #101416;
       font-weight: 900;
       box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mark::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 1px solid rgba(16, 20, 22, .32);
+      border-radius: 6px;
     }
 
     .brand strong {
@@ -106,18 +117,28 @@
     .nav {
       display: grid;
       align-content: start;
-      gap: 6px;
+      gap: 8px;
     }
 
     .nav a {
       display: flex;
       align-items: center;
-      gap: 10px;
-      min-height: 40px;
-      padding: 9px 10px;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 44px;
+      padding: 10px 11px;
       border-radius: 8px;
       color: var(--muted);
-      transition: background .16s ease, color .16s ease, transform .16s ease;
+      border: 1px solid transparent;
+      transition: background .16s ease, color .16s ease, transform .16s ease, border-color .16s ease;
+    }
+
+    .nav a::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(168, 179, 173, .35);
     }
 
     .nav a:hover,
@@ -125,6 +146,12 @@
       color: var(--text);
       background: var(--panel-soft);
       transform: translateX(2px);
+      border-color: rgba(255, 255, 255, .05);
+    }
+
+    .nav a.active::after {
+      background: var(--green);
+      box-shadow: 0 0 18px rgba(99, 216, 159, .5);
     }
 
     .side-card {
@@ -136,6 +163,7 @@
       gap: 10px;
       box-shadow: var(--soft-shadow);
       animation: riseIn .42s ease both;
+      box-shadow: var(--soft-shadow), var(--inset);
     }
 
     .side-card span {
@@ -242,7 +270,7 @@
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(0, 1.2fr) minmax(300px, .8fr);
+      grid-template-columns: minmax(0, 1.05fr) minmax(330px, .95fr);
       gap: 18px;
       align-items: stretch;
     }
@@ -257,6 +285,7 @@
         rgba(26, 33, 36, .96);
       box-shadow: var(--shadow);
       animation: riseIn .46s ease both;
+      box-shadow: var(--shadow), var(--inset);
     }
 
     .hero-copy {
@@ -381,13 +410,13 @@
 
     .metrics {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
     }
 
     .metric {
       padding: 18px;
-      min-height: 123px;
+      min-height: 118px;
       box-shadow: var(--soft-shadow);
       display: grid;
       align-content: space-between;
@@ -426,7 +455,7 @@
 
     .metric strong {
       display: block;
-      font-size: 1.88rem;
+      font-size: 1.72rem;
       line-height: 1;
     }
 
@@ -447,6 +476,11 @@
     .panel {
       padding: 22px;
       animation-delay: .04s;
+    }
+
+    .panel.tight {
+      padding: 0;
+      overflow: hidden;
     }
 
     .panel-head {
@@ -492,6 +526,12 @@
       white-space: nowrap;
     }
 
+    .btn.small {
+      min-height: 32px;
+      padding: 7px 10px;
+      font-size: .84rem;
+    }
+
     .btn:hover {
       background: #2c363c;
       border-color: #4d5d66;
@@ -528,6 +568,42 @@
       min-height: 40px;
       padding: 10px 12px;
       outline: none;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(16, 21, 22, .54);
+    }
+
+    .segmented {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #111719;
+    }
+
+    .segmented button {
+      min-height: 31px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      transition: background .16s ease, color .16s ease;
+    }
+
+    .segmented button.active {
+      background: var(--panel-soft);
+      color: var(--text);
     }
 
     textarea {
@@ -641,6 +717,22 @@
       background: rgba(255, 116, 116, .12);
       color: #ffd2d2;
       border-color: rgba(255, 116, 116, .25);
+    }
+
+    .tag.good {
+      background: rgba(99, 216, 159, .12);
+      color: #c8f6de;
+      border-color: rgba(99, 216, 159, .22);
+    }
+
+    .alias-line {
+      color: #7f8c87;
+      display: block;
+      font-size: .78rem;
+      margin-top: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .row-actions {
@@ -825,6 +917,30 @@
       line-height: 1.4;
     }
 
+    .admin-state-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .state-box {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(16, 21, 22, .58);
+    }
+
+    .state-box span {
+      color: var(--muted);
+      display: block;
+      font-size: .8rem;
+      margin-bottom: 8px;
+    }
+
+    .state-box strong {
+      display: block;
+      font-size: 1.05rem;
+    }
+
     @media (max-width: 980px) {
       .shell { grid-template-columns: 1fr; }
       .side {
@@ -954,16 +1070,24 @@
                 <strong id="metric-bot">...</strong>
               </div>
               <div class="metric">
-                <span>Commands</span>
+                <span>Total commands</span>
                 <strong id="metric-commands">0</strong>
               </div>
               <div class="metric">
-                <span>Queue</span>
-                <strong id="metric-queue">0</strong>
+                <span>Enabled</span>
+                <strong id="metric-enabled">0</strong>
+              </div>
+              <div class="metric">
+                <span>Disabled</span>
+                <strong id="metric-disabled">0</strong>
               </div>
               <div class="metric">
                 <span>Uptime</span>
                 <strong id="metric-uptime">0m</strong>
+              </div>
+              <div class="metric">
+                <span>Queue</span>
+                <strong id="metric-queue">0</strong>
               </div>
             </div>
           </div>
@@ -1022,8 +1146,15 @@
                 <span class="section-subtitle">Search, edit, and remove chat commands.</span>
               </div>
               <div class="filters">
-                <input id="search" type="search" placeholder="Search commands" autocomplete="off" />
                 <button class="btn primary" id="new-command" type="button">New command</button>
+              </div>
+            </div>
+            <div class="toolbar">
+              <input id="search" type="search" placeholder="Search command name, response, or alias" autocomplete="off" />
+              <div class="segmented" aria-label="Command status filter">
+                <button class="active" type="button" data-filter="all">All</button>
+                <button type="button" data-filter="enabled">Enabled</button>
+                <button type="button" data-filter="disabled">Disabled</button>
               </div>
             </div>
             <div class="table-wrap">
@@ -1122,11 +1253,21 @@
                 <span class="section-subtitle">Unlocked admins can manage every viewer command.</span>
               </div>
             </div>
-            <div class="mini-list">
-              <div class="mini-row"><span>Add commands</span><strong>Create</strong></div>
-              <div class="mini-row"><span>Edit responses, levels, cooldowns, aliases</span><strong>Update</strong></div>
-              <div class="mini-row"><span>Disable commands without deleting them</span><strong>Toggle</strong></div>
-              <div class="mini-row"><span>Delete old or broken commands</span><strong>Remove</strong></div>
+            <div class="admin-state-grid">
+              <div class="state-box">
+                <span>Session</span>
+                <strong id="admin-session-state">Locked</strong>
+              </div>
+              <div class="state-box">
+                <span>Editing</span>
+                <strong id="admin-edit-state">New command</strong>
+              </div>
+              <div class="mini-list">
+                <div class="mini-row"><span>Add commands</span><strong>Create</strong></div>
+                <div class="mini-row"><span>Edit responses, levels, cooldowns, aliases</span><strong>Update</strong></div>
+                <div class="mini-row"><span>Disable commands without deleting them</span><strong>Toggle</strong></div>
+                <div class="mini-row"><span>Delete old or broken commands</span><strong>Remove</strong></div>
+              </div>
             </div>
           </div>
           </div>
@@ -1139,13 +1280,16 @@
     const state = {
       adminCode: localStorage.getItem('admin-code') || '',
       commands: {},
-      editing: ''
+      editing: '',
+      commandFilter: 'all'
     };
 
     const el = {
       status: document.querySelector('#bot-status'),
       metricBot: document.querySelector('#metric-bot'),
       metricCommands: document.querySelector('#metric-commands'),
+      metricEnabled: document.querySelector('#metric-enabled'),
+      metricDisabled: document.querySelector('#metric-disabled'),
       metricQueue: document.querySelector('#metric-queue'),
       metricUptime: document.querySelector('#metric-uptime'),
       sideBot: document.querySelector('#side-bot'),
@@ -1161,6 +1305,8 @@
       commandForm: document.querySelector('#command-form'),
       editorTitle: document.querySelector('#editor-title'),
       adminCode: document.querySelector('#admin-code'),
+      adminSessionState: document.querySelector('#admin-session-state'),
+      adminEditState: document.querySelector('#admin-edit-state'),
       tabs: document.querySelectorAll('[data-tab]'),
       panels: document.querySelectorAll('[data-tab-panel]')
     };
@@ -1226,7 +1372,6 @@
         dot.className = `dot ${connected ? 'online' : 'offline'}`;
         el.status.querySelector('span:last-child').textContent = connected ? 'Bot online' : 'Bot offline';
         el.metricBot.textContent = connected ? 'Online' : 'Offline';
-        el.metricCommands.textContent = status.commands || 0;
         el.metricQueue.textContent = status.bot?.queuedMessages ?? 0;
         el.metricUptime.textContent = formatUptime(status.uptime);
         el.sideBot.textContent = connected ? 'Connected to Twitch chat.' : 'Website is live; bot is offline or disabled.';
@@ -1244,13 +1389,28 @@
 
     async function loadCommands() {
       state.commands = await requestJson('/api/commands');
+      updateCommandMetrics();
       renderCommands();
+    }
+
+    function updateCommandMetrics() {
+      const commands = Object.values(state.commands);
+      const enabled = commands.filter((command) => command.enabled !== false).length;
+      const disabled = commands.length - enabled;
+      el.metricCommands.textContent = commands.length;
+      el.metricEnabled.textContent = enabled;
+      el.metricDisabled.textContent = disabled;
     }
 
     function renderCommands() {
       const filter = el.search.value.trim().toLowerCase();
       const entries = Object.entries(state.commands)
         .sort(([a], [b]) => a.localeCompare(b))
+        .filter(([, command]) => {
+          if (state.commandFilter === 'enabled') return command.enabled !== false;
+          if (state.commandFilter === 'disabled') return command.enabled === false;
+          return true;
+        })
         .filter(([name, command]) => {
           const haystack = `${name} ${command.response || ''} ${(command.aliases || []).join(' ')}`.toLowerCase();
           return haystack.includes(filter);
@@ -1260,10 +1420,13 @@
       el.rows.innerHTML = entries.map(([name, command]) => `
         <tr>
           <td><strong>${escapeHtml(name)}</strong></td>
-          <td><div class="response" title="${escapeHtml(command.response || '')}">${escapeHtml(command.response || '')}</div></td>
+          <td>
+            <div class="response" title="${escapeHtml(command.response || '')}">${escapeHtml(command.response || '')}</div>
+            <span class="alias-line">${escapeHtml((command.aliases || []).length ? `Aliases: ${(command.aliases || []).join(', ')}` : 'No aliases')}</span>
+          </td>
           <td>${escapeHtml(command.userlevel || 'everyone')}</td>
           <td>${Number(command.cooldown) || 0}s</td>
-          <td><span class="tag ${command.enabled === false ? 'off' : ''}">${command.enabled === false ? 'Disabled' : 'Enabled'}</span></td>
+          <td><span class="tag ${command.enabled === false ? 'off' : 'good'}">${command.enabled === false ? 'Disabled' : 'Enabled'}</span></td>
           <td>
             <div class="row-actions">
               <button class="btn" type="button" data-action="edit" data-name="${escapeHtml(name)}">Edit</button>
@@ -1278,6 +1441,7 @@
       el.authPanel.hidden = unlocked;
       el.commandForm.hidden = !unlocked;
       el.adminState.textContent = unlocked ? 'Unlocked' : 'Locked';
+      el.adminSessionState.textContent = unlocked ? 'Unlocked' : 'Locked';
       if (unlocked) {
         localStorage.setItem('admin-code', state.adminCode);
       } else {
@@ -1302,6 +1466,7 @@
     function resetForm() {
       state.editing = '';
       el.editorTitle.textContent = 'New Command';
+      el.adminEditState.textContent = 'New command';
       el.commandForm.reset();
       document.querySelector('#cooldown').value = 5;
       document.querySelector('#enabled').value = 'true';
@@ -1319,6 +1484,7 @@
       if (!command) return;
       state.editing = name;
       el.editorTitle.textContent = `Edit ${name}`;
+      el.adminEditState.textContent = name;
       document.querySelector('#name').value = name;
       document.querySelector('#response').value = command.response || '';
       document.querySelector('#cooldown').value = Number(command.cooldown) || 0;
@@ -1403,6 +1569,13 @@
 
     document.querySelector('#cancel-edit').addEventListener('click', resetForm);
     el.search.addEventListener('input', renderCommands);
+    document.querySelectorAll('[data-filter]').forEach((button) => {
+      button.addEventListener('click', () => {
+        state.commandFilter = button.dataset.filter;
+        document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item === button));
+        renderCommands();
+      });
+    });
     el.commandForm.addEventListener('submit', (event) => {
       saveCommand(event).catch((err) => showMessage(err.message, true));
     });
