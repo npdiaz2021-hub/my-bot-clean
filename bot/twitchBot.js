@@ -580,7 +580,8 @@ class TwitchBot {
 
     const preview = names.slice(0, 18).join(', ');
     const suffix = names.length > 18 ? ` and ${names.length - 18} more` : '';
-    await this.say(channel, `Commands: ${preview}${suffix}. Full list: ${this.webUrl}`);
+    const fullList = this.webUrl ? ` Full list: ${this.webUrl}` : '';
+    await this.say(channel, `Commands: ${preview}${suffix}.${fullList}`);
   }
 
   storeMessageFor(err, fallback) {
@@ -595,13 +596,13 @@ class TwitchBot {
     const trigger = tokens[0] || '';
     const args = tokens.slice(1);
 
-    if (trigger.toLowerCase() === '!commands') {
-      await this.say(channel, `Commands and admin tools: ${this.webUrl}`);
+    const found = this.store.findCommand(trigger);
+    if (!found) {
+      if (trigger.toLowerCase() === '!commands') {
+        await this.listCommands(channel);
+      }
       return;
     }
-
-    const found = this.store.findCommand(trigger);
-    if (!found) return;
 
     const { name, command } = found;
     if (command.enabled === false) return;
@@ -615,7 +616,8 @@ class TwitchBot {
       username,
       channel,
       args,
-      trigger
+      trigger,
+      webUrl: this.webUrl
     });
 
     if (response) {
@@ -695,6 +697,9 @@ class TwitchBot {
     output = output.replace(/\$\(channel\)/gi, context.channel.replace('#', ''));
     output = output.replace(/\$\(time\)/gi, new Date().toLocaleTimeString('en-US', { timeZone: 'America/Chicago' }));
     output = output.replace(/\$\(args\)/gi, argsText);
+    output = output.replace(/\$\(weburl\)/gi, context.webUrl || '');
+    output = output.replace(/\$\(commandsurl\)/gi, context.webUrl || '');
+    output = output.replace(/\$\(dashboard\)/gi, context.webUrl || '');
     output = output.replace(/\$\(target\)/gi, target);
     output = output.replace(/\$\(touser\)/gi, target);
     output = output.replace(/\$\((\d+)\)/g, (_match, index) => context.args[Number(index) - 1] || '');

@@ -5,6 +5,7 @@
   "main": "app/index.js",
   "scripts": {
     "start": "node app/index.js",
+    "bot": "node app/index.js --bot-only",
     "dev": "node app/index.js",
     "check": "node --check app/index.js && node --check bot/twitchBot.js && node --check shared/store.js && node --check website/server.js && node --check website/errorCodes.js && node --check scripts/fix_aliases.js && node --check scripts/test_server.js",
     "fix:aliases": "node scripts/fix_aliases.js",

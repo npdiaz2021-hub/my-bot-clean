@@ -24,6 +24,14 @@ Twitch bot and web admin UI with separate folders:
 
 The dashboard runs on `PORT` / `WEB_PORT`. The bot and website share `data/commands.json`, so edits from chat and edits from the dashboard stay together.
 
+To run only the Twitch bot without starting the website/dashboard:
+
+```bash
+npm run bot
+```
+
+You can also set `WEBSITE_ENABLED=false` before `npm start` for the same bot-only mode.
+
 ## Cloudflare Tunnel Setup (for public access)
 
 To expose your local app via Cloudflare:
@@ -69,6 +77,7 @@ Access at: https://my-bot-clean.npdiaz2021.workers.dev
 - The bot does not use website error codes. It logs plain status messages and stays quiet for normal chat misses like unknown commands or cooldowns.
 - Website/API errors still return `{ error, code, contact }` for the dashboard.
 - Set `TWITCH_BOT_ENABLED=false` when you want to run only the website for local checks.
+- Run `npm run bot` or set `WEBSITE_ENABLED=false` when you want the Twitch bot online without the website being live.
 - Do not commit `.env` to GitHub.
 - Use Cloudflare or another host to expose the web admin UI publicly.
 

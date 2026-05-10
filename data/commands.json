@@ -10,7 +10,7 @@
     "enabled": true
   },
   "!commands": {
-    "response": "Command dashboard: http://localhost:61234",
+    "response": "Commands and admin tools: $(weburl)",
     "cooldown": 5,
     "userlevel": "everyone",
     "aliases": [

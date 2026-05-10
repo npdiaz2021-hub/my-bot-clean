@@ -8,6 +8,7 @@ const { TwitchBot } = require('../bot/twitchBot');
 
 const LOCK_DIR = path.join(__dirname, '..', 'data');
 const LOCK_FILE = path.join(LOCK_DIR, 'bot.lock');
+const BOT_ONLY_MODE = process.argv.includes('--bot-only') || process.env.WEBSITE_ENABLED === 'false';
 const SHOULD_RUN_TWITCH_BOT = process.env.TWITCH_BOT_ENABLED !== 'false'
   && Boolean(process.env.TWITCH_USERNAME && process.env.TWITCH_OAUTH && process.env.TWITCH_CHANNEL);
 
@@ -104,30 +105,43 @@ if (SHOULD_RUN_TWITCH_BOT) {
   acquireLock();
 }
 
-console.log('Starting TimmySudo control center...');
+console.log(BOT_ONLY_MODE ? 'Starting TimmySudo Twitch bot...' : 'Starting TimmySudo control center...');
 
 const store = new CommandStore();
 store.load();
 
-const website = createWebsite({
+let bot;
+let server = null;
+let website = null;
+
+if (!BOT_ONLY_MODE) {
+  website = createWebsite({
+    store,
+    getBotStatus: () => bot.getStatus()
+  });
+}
+
+bot = new TwitchBot({
   store,
-  getBotStatus: () => bot.getStatus()
+  webUrl: website ? website.publicUrl : process.env.WEB_URL
 });
 
-const bot = new TwitchBot({
-  store,
-  webUrl: website.publicUrl
-});
+if (website) {
+  server = website.start();
+} else {
+  console.log('Website disabled. Twitch bot will run without the dashboard server.');
+}
 
-const server = website.start();
 bot.start();
 
 function shutdown(signal) {
   console.log(`${signal} received. Shutting down...`);
 
-  server.close(() => {
-    console.log('Website stopped.');
-  });
+  if (server) {
+    server.close(() => {
+      console.log('Website stopped.');
+    });
+  }
 
   bot.stop().finally(() => {
     if (SHOULD_RUN_TWITCH_BOT) {
