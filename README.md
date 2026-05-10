@@ -74,11 +74,14 @@ Access at: https://my-bot-clean.npdiaz2021.workers.dev
 ## Notes
 
 - Render uses the root `render.yaml`; keep that file at the repo root.
+- The Render blueprint has two services: the website service runs `npm start`, and the always-on bot worker runs `npm run bot`.
+- Add `TWITCH_USERNAME`, `TWITCH_OAUTH`, and `TWITCH_CHANNEL` as secret environment variables on the Render worker so it can stay in chat.
 - The bot does not use website error codes. It logs plain status messages and stays quiet for normal chat misses like unknown commands or cooldowns.
 - Website/API errors still return `{ error, code, contact }` for the dashboard.
 - `npm start` is website-only unless `TWITCH_BOT_ENABLED=true`.
 - Run `npm run bot` or set `WEBSITE_ENABLED=false` when you want the Twitch bot online without the website being live.
 - Website and bot restarts use separate lock files, so restarting one does not kill the other.
+- Website dashboard edits and the separate hosted bot worker need shared storage to sync live across services; until a database is added, commit command changes to `data/commands.json` and redeploy/reload the worker.
 - Do not commit `.env` to GitHub.
 - Use Cloudflare or another host to expose the web admin UI publicly.
 

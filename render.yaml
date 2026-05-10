@@ -14,3 +14,28 @@ services:
       - key: WEB_URL
         value: "https://timmysudoproductions.onrender.com/index.html#stats"
     autoDeploy: true
+  - type: worker
+    name: timmysudo-twitch-bot
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm run bot
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: WEBSITE_ENABLED
+        value: "false"
+      - key: TWITCH_BOT_ENABLED
+        value: "true"
+      - key: WEB_URL
+        value: "https://timmysudoproductions.onrender.com/index.html#stats"
+      - key: TWITCH_USERNAME
+        sync: false
+      - key: TWITCH_OAUTH
+        sync: false
+      - key: TWITCH_CHANNEL
+        sync: false
+      - key: TWITCH_BOT_USERNAME_ALIASES
+        sync: false
+      - key: TWITCH_BOT_USER_ID
+        sync: false
+    autoDeploy: true
