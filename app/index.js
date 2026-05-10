@@ -7,10 +7,12 @@ const { createWebsite } = require('../website/server');
 const { TwitchBot } = require('../bot/twitchBot');
 
 const LOCK_DIR = path.join(__dirname, '..', 'data');
-const LOCK_FILE = path.join(LOCK_DIR, 'bot.lock');
+const LOCK_FILE = path.join(LOCK_DIR, 'app.lock');
+const LEGACY_LOCK_FILE = path.join(LOCK_DIR, 'bot.lock');
 const BOT_ONLY_MODE = process.argv.includes('--bot-only') || process.env.WEBSITE_ENABLED === 'false';
 const SHOULD_RUN_TWITCH_BOT = process.env.TWITCH_BOT_ENABLED !== 'false'
   && Boolean(process.env.TWITCH_USERNAME && process.env.TWITCH_OAUTH && process.env.TWITCH_CHANNEL);
+const SHOULD_LOCK_INSTANCE = process.env.INSTANCE_LOCK_ENABLED !== 'false';
 
 function isProcessRunning(pid) {
   if (!pid || pid === process.pid) return false;
@@ -62,29 +64,33 @@ function terminatePreviousInstance(pid) {
 
 function acquireLock() {
   fs.mkdirSync(LOCK_DIR, { recursive: true });
-
-  try {
-    const existing = fs.readFileSync(LOCK_FILE, 'utf8').trim();
-    const existingPid = Number(existing);
-    if (isProcessRunning(existingPid)) {
-      if (!terminatePreviousInstance(existingPid)) {
-        console.error(`Another bot instance is already running as PID ${existingPid}.`);
-        process.exit(1);
-      }
-    }
-    fs.unlinkSync(LOCK_FILE);
-  } catch (err) {
-    if (err.code !== 'ENOENT') {
-      console.error(`Could not inspect bot lock: ${err.message}`);
-      process.exit(1);
-    }
-  }
+  terminateFromLockFile(LOCK_FILE);
+  terminateFromLockFile(LEGACY_LOCK_FILE);
 
   try {
     fs.writeFileSync(LOCK_FILE, String(process.pid), { flag: 'wx' });
   } catch (err) {
-    console.error(`Could not acquire bot lock: ${err.message}`);
+    console.error(`Could not acquire app lock: ${err.message}`);
     process.exit(1);
+  }
+}
+
+function terminateFromLockFile(file) {
+  try {
+    const existing = fs.readFileSync(file, 'utf8').trim();
+    const existingPid = Number(existing);
+    if (isProcessRunning(existingPid)) {
+      if (!terminatePreviousInstance(existingPid)) {
+        console.error(`Another app instance is already running as PID ${existingPid}.`);
+        process.exit(1);
+      }
+    }
+    fs.unlinkSync(file);
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.error(`Could not inspect app lock ${path.basename(file)}: ${err.message}`);
+      process.exit(1);
+    }
   }
 }
 
@@ -96,12 +102,12 @@ function releaseLock() {
     }
   } catch (err) {
     if (err.code !== 'ENOENT') {
-      console.warn(`Could not release bot lock: ${err.message}`);
+      console.warn(`Could not release app lock: ${err.message}`);
     }
   }
 }
 
-if (SHOULD_RUN_TWITCH_BOT) {
+if (SHOULD_LOCK_INSTANCE) {
   acquireLock();
 }
 
@@ -144,7 +150,7 @@ function shutdown(signal) {
   }
 
   bot.stop().finally(() => {
-    if (SHOULD_RUN_TWITCH_BOT) {
+    if (SHOULD_LOCK_INSTANCE) {
       releaseLock();
     }
     process.exit(0);
@@ -157,7 +163,7 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
   console.error(`Unexpected app failure: ${err.message}`);
   console.error(err.stack);
-  if (SHOULD_RUN_TWITCH_BOT) {
+  if (SHOULD_LOCK_INSTANCE) {
     releaseLock();
   }
   process.exit(1);
@@ -165,14 +171,14 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (reason) => {
   console.error(`Unexpected async failure: ${reason}`);
-  if (SHOULD_RUN_TWITCH_BOT) {
+  if (SHOULD_LOCK_INSTANCE) {
     releaseLock();
   }
   process.exit(1);
 });
 
 process.on('exit', () => {
-  if (SHOULD_RUN_TWITCH_BOT) {
+  if (SHOULD_LOCK_INSTANCE) {
     releaseLock();
   }
 });
