@@ -223,7 +223,7 @@ class TwitchBot {
       return;
     }
 
-    await this.handleGreeting(channel, username, msgLower);
+    await this.handleGreeting(channel, tags, msgLower);
   }
 
   shouldIgnoreMessage(tags, message) {
@@ -454,13 +454,24 @@ class TwitchBot {
     }
   }
 
-  async handleGreeting(channel, username, msgLower) {
+  async handleGreeting(channel, tags, msgLower) {
     if (process.env.TWITCH_GREETING_ENABLED === 'false') return;
 
     const greeting = isStandaloneGreeting(msgLower);
     if (!greeting) return;
 
-    const key = cleanUsername(username);
+    // Don't greet the bot itself - use user-id for reliability
+    const botUserId = String(process.env.TWITCH_BOT_USER_ID || '').toLowerCase();
+    const senderId = String(tags['user-id'] || '').toLowerCase();
+    if (senderId && senderId === botUserId) return;
+
+    // Fallback: also check username if user-id is not available
+    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
+    const senderUsername = cleanUsername(tags.username);
+    if (!senderId && senderUsername === botUsername) return;
+
+    const username = getDisplayName(tags);
+    const key = senderId || senderUsername;
     if (this.greetedUsers.has(key)) return;
 
     const responses = {
