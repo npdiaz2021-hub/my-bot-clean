@@ -8,6 +8,8 @@ const { TwitchBot } = require('../bot/twitchBot');
 
 const LOCK_DIR = path.join(__dirname, '..', 'data');
 const LOCK_FILE = path.join(LOCK_DIR, 'bot.lock');
+const SHOULD_RUN_TWITCH_BOT = process.env.TWITCH_BOT_ENABLED !== 'false'
+  && Boolean(process.env.TWITCH_USERNAME && process.env.TWITCH_OAUTH && process.env.TWITCH_CHANNEL);
 
 function isProcessRunning(pid) {
   if (!pid || pid === process.pid) return false;
@@ -59,7 +61,9 @@ function releaseLock() {
   }
 }
 
-acquireLock();
+if (SHOULD_RUN_TWITCH_BOT) {
+  acquireLock();
+}
 
 console.log('Starting TimmySudo control center...');
 
@@ -87,7 +91,9 @@ function shutdown(signal) {
   });
 
   bot.stop().finally(() => {
-    releaseLock();
+    if (SHOULD_RUN_TWITCH_BOT) {
+      releaseLock();
+    }
     process.exit(0);
   });
 }
@@ -98,14 +104,22 @@ process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('uncaughtException', (err) => {
   console.error(`Unexpected app failure: ${err.message}`);
   console.error(err.stack);
-  releaseLock();
+  if (SHOULD_RUN_TWITCH_BOT) {
+    releaseLock();
+  }
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
   console.error(`Unexpected async failure: ${reason}`);
-  releaseLock();
+  if (SHOULD_RUN_TWITCH_BOT) {
+    releaseLock();
+  }
   process.exit(1);
 });
 
-process.on('exit', releaseLock);
+process.on('exit', () => {
+  if (SHOULD_RUN_TWITCH_BOT) {
+    releaseLock();
+  }
+});
