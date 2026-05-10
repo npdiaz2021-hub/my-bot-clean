@@ -11,4 +11,6 @@ services:
         value: 0.0.0.0
       - key: WEB_PORT
         value: 10000
+      - key: WEB_URL
+        value: "https://timmysudoproductions.onrender.com/index.html#stats"
     autoDeploy: true

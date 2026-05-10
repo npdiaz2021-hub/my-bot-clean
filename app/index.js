@@ -22,6 +22,43 @@ function isProcessRunning(pid) {
   }
 }
 
+function sleep(ms) {
+  const buffer = new SharedArrayBuffer(4);
+  const view = new Int32Array(buffer);
+  Atomics.wait(view, 0, 0, ms);
+}
+
+function terminatePreviousInstance(pid) {
+  if (!isProcessRunning(pid)) return true;
+
+  console.warn(`Terminating previous bot instance PID ${pid} before restart.`);
+
+  try {
+    process.kill(pid, 'SIGTERM');
+  } catch (err) {
+    console.warn(`Could not signal previous bot instance ${pid}: ${err.message}`);
+  }
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (!isProcessRunning(pid)) return true;
+    sleep(250);
+  }
+
+  try {
+    process.kill(pid, 'SIGKILL');
+  } catch (err) {
+    console.error(`Could not terminate previous bot instance ${pid}: ${err.message}`);
+    return false;
+  }
+
+  for (let attempt = 0; attempt < 20; attempt += 1) {
+    if (!isProcessRunning(pid)) return true;
+    sleep(250);
+  }
+
+  return !isProcessRunning(pid);
+}
+
 function acquireLock() {
   fs.mkdirSync(LOCK_DIR, { recursive: true });
 
@@ -29,8 +66,10 @@ function acquireLock() {
     const existing = fs.readFileSync(LOCK_FILE, 'utf8').trim();
     const existingPid = Number(existing);
     if (isProcessRunning(existingPid)) {
-      console.error(`Another bot instance is already running as PID ${existingPid}.`);
-      process.exit(1);
+      if (!terminatePreviousInstance(existingPid)) {
+        console.error(`Another bot instance is already running as PID ${existingPid}.`);
+        process.exit(1);
+      }
     }
     fs.unlinkSync(LOCK_FILE);
   } catch (err) {
