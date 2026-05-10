@@ -1,10 +1,19 @@
 const tmi = require('tmi.js');
+const fs = require('fs');
+const path = require('path');
+
+const ROOT_DIR = path.join(__dirname, '..');
+const GREETING_LOG_DIR = path.join(ROOT_DIR, 'GREETING LOG');
+const GREETING_LOG_FILE = path.join(GREETING_LOG_DIR, 'greeted-users.txt');
+const BOT_LOG_DIR = path.join(ROOT_DIR, 'BOT LOG');
+const BOT_ACTIVITY_LOG_FILE = path.join(BOT_LOG_DIR, 'bot-activity.log');
 
 const DEFAULTS = {
   managerPrefix: '#6',
   commandPrefix: '!',
   defaultCooldownSeconds: 5,
-  greetMemoryMs: 60 * 60 * 1000,
+  outgoingEchoMemoryMs: 15 * 1000,
+  incomingDuplicateMemoryMs: 4 * 1000,
   maxChatMessageLength: 450,
   chatSendDelayMs: 1350,
   maxQueueSize: 25
@@ -30,6 +39,39 @@ function normalizeChannel(channel) {
 
 function getDisplayName(tags) {
   return tags['display-name'] || tags.username || 'there';
+}
+
+function getSenderUsername(tags) {
+  tags = tags || {};
+  return cleanUsername(tags.username || tags['display-name'] || tags.login);
+}
+
+function getGreetingKey(tags) {
+  return getSenderUsername(tags);
+}
+
+function parseUsernameList(value) {
+  return String(value || '')
+    .split(/[,\s]+/)
+    .map(cleanUsername)
+    .filter(Boolean);
+}
+
+function getBotUsernames() {
+  const configuredUsername = cleanUsername(process.env.TWITCH_USERNAME);
+  const names = new Set([
+    configuredUsername,
+    ...parseUsernameList(process.env.TWITCH_BOT_USERNAME_ALIASES)
+  ]);
+
+  if (configuredUsername.endsWith('s')) {
+    names.add(configuredUsername.slice(0, -1));
+  } else if (configuredUsername) {
+    names.add(`${configuredUsername}s`);
+  }
+
+  names.delete('');
+  return names;
 }
 
 function getUserLevels(tags, trustedUsers) {
@@ -59,6 +101,16 @@ function isManager(userLevels) {
   return userLevels.has('broadcaster') || userLevels.has('moderator') || userLevels.has('trusted');
 }
 
+function isBotSender(tags) {
+  const botUsernames = getBotUsernames();
+  const botUserId = String(process.env.TWITCH_BOT_USER_ID || '').trim().toLowerCase();
+  const senderUsername = getSenderUsername(tags);
+  const senderId = String((tags || {})['user-id'] || '').trim().toLowerCase();
+
+  if (botUserId && senderId && senderId === botUserId) return true;
+  return Boolean(senderUsername && botUsernames.has(senderUsername));
+}
+
 function parseTokens(message) {
   return String(message || '').trim().split(/\s+/).filter(Boolean);
 }
@@ -76,6 +128,8 @@ function parseManagerLine(message) {
 }
 
 function isStandaloneGreeting(message) {
+  if (isBotGreetingReply(message)) return '';
+
   const greetings = ['yo', 'hey', 'hi', 'hello', 'sup', 'hola', 'heyo', 'hiya', 'greetings'];
   return greetings.find((greeting) => (
     message === greeting ||
@@ -83,6 +137,21 @@ function isStandaloneGreeting(message) {
     message.startsWith(`${greeting}!`) ||
     message.startsWith(`${greeting}?`)
   ));
+}
+
+function isBotGreetingReply(message) {
+  const text = String(message || '').replace(/\s+/g, ' ').trim().toLowerCase();
+  return (
+    /^yo\s+\S+,\s+what'?s good!?$/.test(text) ||
+    /^hello\s+\S+!$/.test(text) ||
+    /^hi there,\s+\S+!$/.test(text) ||
+    /^hey\s+\S+!$/.test(text) ||
+    /^not much,\s+\S+!\s+what'?s up with you\?$/.test(text) ||
+    /^hola\s+\S+!$/.test(text) ||
+    /^hiya\s+\S+!$/.test(text) ||
+    /^heyo\s+\S+!$/.test(text) ||
+    /^greetings,\s+\S+!$/.test(text)
+  );
 }
 
 function truncateForChat(message, maxLength = DEFAULTS.maxChatMessageLength) {
@@ -108,9 +177,88 @@ class TwitchBot {
     this.commandCooldowns = new Map();
     this.userCommandCooldowns = new Map();
     this.greetedUsers = new Set();
+    this.recentOutgoingMessages = new Map();
+    this.recentIncomingMessages = new Map();
     this.outgoingQueue = [];
     this.queueTimer = null;
-    this.greetingTimer = null;
+    this.greetingLogStarted = false;
+  }
+
+  ensureGreetingLogDir() {
+    fs.mkdirSync(GREETING_LOG_DIR, { recursive: true });
+  }
+
+  ensureBotLogDir() {
+    fs.mkdirSync(BOT_LOG_DIR, { recursive: true });
+  }
+
+  logActivity(action, details = '') {
+    const timestamp = new Date().toISOString();
+    const safeAction = String(action || 'activity').replace(/\s+/g, ' ').trim();
+    const safeDetails = String(details || '').replace(/\s+/g, ' ').trim();
+    const line = safeDetails
+      ? `[${timestamp}] ${safeAction}: ${safeDetails}\n`
+      : `[${timestamp}] ${safeAction}\n`;
+
+    try {
+      this.ensureBotLogDir();
+      fs.appendFileSync(BOT_ACTIVITY_LOG_FILE, line);
+    } catch (err) {
+      this.logger.warn(`Bot activity log could not save: ${err.message}`);
+    }
+  }
+
+  resetBotActivityLog() {
+    try {
+      this.ensureBotLogDir();
+      fs.writeFileSync(BOT_ACTIVITY_LOG_FILE, '');
+      return true;
+    } catch (err) {
+      this.logger.warn(`Bot activity log could not be reset: ${err.message}`);
+      return false;
+    }
+  }
+
+  resetGreetingLog() {
+    this.greetedUsers.clear();
+    this.greetingLogStarted = true;
+
+    try {
+      const botLogReset = this.resetBotActivityLog();
+      this.ensureGreetingLogDir();
+      fs.writeFileSync(GREETING_LOG_FILE, '');
+      for (const username of getBotUsernames()) {
+        this.rememberGreetedUser(username);
+      }
+      this.logger.log('Greeting log reset for this stream.');
+      this.logActivity(
+        'stream_logs_reset',
+        botLogReset
+          ? 'Greeting log and bot activity log reset for this stream.'
+          : 'Greeting log reset for this stream. Bot activity log reset failed.'
+      );
+    } catch (err) {
+      this.logger.warn(`Greeting log could not be reset: ${err.message}`);
+      this.logActivity('greeting_log_reset_failed', err.message);
+    }
+  }
+
+  rememberGreetedUser(username) {
+    const key = cleanUsername(username);
+    if (!key || this.greetedUsers.has(key)) return false;
+
+    try {
+      this.ensureGreetingLogDir();
+      fs.appendFileSync(GREETING_LOG_FILE, `${key}\n`);
+      this.greetedUsers.add(key);
+      this.logger.log(`Greeting logged for ${key}.`);
+      this.logActivity('greeting_logged', key);
+      return true;
+    } catch (err) {
+      this.logger.warn(`Greeting log could not save ${key}: ${err.message}`);
+      this.logActivity('greeting_log_save_failed', `${key}: ${err.message}`);
+      return false;
+    }
   }
 
   getStatus() {
@@ -128,15 +276,25 @@ class TwitchBot {
   }
 
   start() {
+    if (this.started) {
+      this.logger.log('Twitch bot is already started.');
+      this.logActivity('start_skipped', 'Twitch bot is already started.');
+      return;
+    }
+
     if (process.env.TWITCH_BOT_ENABLED === 'false') {
       this.logger.log('Twitch bot is disabled by TWITCH_BOT_ENABLED=false.');
+      this.logActivity('start_skipped', 'Twitch bot is disabled by TWITCH_BOT_ENABLED=false.');
       return;
     }
 
     if (!this.hasCredentials()) {
       this.logger.warn('Twitch bot is paused because Twitch username, OAuth token, or channel is missing.');
+      this.logActivity('start_skipped', 'Missing Twitch username, OAuth token, or channel.');
       return;
     }
+
+    this.logActivity('start', `Starting Twitch bot for ${process.env.TWITCH_CHANNEL}.`);
 
     this.client = new tmi.Client({
       options: { debug: process.env.TWITCH_DEBUG === 'true' },
@@ -158,13 +316,11 @@ class TwitchBot {
       this.connected = false;
       this.lastDisconnectReason = err.message;
       this.logger.warn(`Twitch bot could not connect: ${err.message}`);
+      this.logActivity('connect_failed', err.message || 'Unknown connection error');
     });
 
-    this.greetingTimer = setInterval(() => {
-      this.greetedUsers.clear();
-      this.logger.log('Greeting memory reset.');
-    }, this.options.greetMemoryMs);
-    this.greetingTimer.unref?.();
+    // Greeting memory and the on-disk greeting log reset when the bot joins
+    // chat for a fresh live session.
   }
 
   hasCredentials() {
@@ -176,8 +332,11 @@ class TwitchBot {
       this.connected = true;
       this.readyAt = new Date().toISOString();
       this.lastDisconnectReason = '';
-      this.greetedUsers.clear();
+      if (!this.greetingLogStarted) {
+        this.resetGreetingLog();
+      }
       this.logger.log(`Twitch bot connected as ${process.env.TWITCH_USERNAME}.`);
+      this.logActivity('connected', `Connected as ${process.env.TWITCH_USERNAME}.`);
       this.pumpQueue();
     });
 
@@ -185,26 +344,25 @@ class TwitchBot {
       this.connected = false;
       this.lastDisconnectReason = reason || 'Disconnected';
       this.logger.warn(`Twitch bot disconnected: ${this.lastDisconnectReason}`);
+      this.logActivity('disconnected', this.lastDisconnectReason);
     });
 
     this.client.on('reconnect', () => {
       this.logger.log('Twitch bot reconnecting...');
+      this.logActivity('reconnect', 'Twitch bot reconnecting.');
     });
 
     this.client.on('notice', (channel, msgid, message) => {
       this.logger.warn(`Twitch notice ${msgid || 'notice'}: ${message}`);
+      this.logActivity('notice', `${channel} ${msgid || 'notice'} ${message}`);
     });
 
     this.client.on('message', (channel, tags, message, self) => {
-      // Enhanced self-check: ignore bot's own messages
-      if (self) return;
-      
-      const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
-      const senderUsername = cleanUsername(tags.username || tags['display-name']);
-      if (senderUsername === botUsername) return;
-      
+      if (self || isBotSender(tags) || this.wasRecentlySentByBot(message)) return;
+
       this.handleMessage(channel, tags, message).catch((err) => {
         this.logger.warn(`Twitch message skipped: ${err.message}`);
+        this.logActivity('message_skipped', err.message);
       });
     });
   }
@@ -212,11 +370,10 @@ class TwitchBot {
   async handleMessage(channel, tags, message) {
     const rawMessage = String(message || '').trim();
     if (!rawMessage || this.shouldIgnoreMessage(tags, rawMessage)) return;
-
-    // Additional check: ignore bot's own messages
-    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
-    const senderUsername = cleanUsername(tags.username || tags['display-name']);
-    if (senderUsername === botUsername) return;
+    if (this.wasRecentlyHandled(tags, rawMessage)) {
+      this.logActivity('duplicate_message_ignored', `${getSenderUsername(tags)}: ${rawMessage}`);
+      return;
+    }
 
     this.lastMessageAt = new Date().toISOString();
 
@@ -225,11 +382,13 @@ class TwitchBot {
     const userLevels = getUserLevels(tags, this.store.getTrustedUsers());
 
     if (msgLower.startsWith(this.options.managerPrefix)) {
+      this.logActivity('manager_command_received', `${username}: ${rawMessage}`);
       await this.handleManagerCommand(channel, rawMessage, userLevels);
       return;
     }
 
     if (msgLower.startsWith(this.options.commandPrefix)) {
+      this.logActivity('chat_command_received', `${username}: ${rawMessage}`);
       await this.handleChatCommand(channel, username, userLevels, rawMessage);
       return;
     }
@@ -243,13 +402,11 @@ class TwitchBot {
 
   shouldIgnoreMessage(tags, message) {
     if (tags['message-type'] === 'system') return true;
+    if (isBotSender(tags) || this.wasRecentlySentByBot(message)) return true;
     if (tags['custom-reward-id']) return false;
 
-    const username = cleanUsername(tags.username || tags['display-name']);
-    const botName = cleanUsername(process.env.TWITCH_USERNAME);
-    if (username && botName && username === botName) return true;
-
     const lower = String(message || '').toLowerCase();
+    if (isBotGreetingReply(lower)) return true;
     if (lower.startsWith('welcome to ') || lower.includes(' joined the channel')) return true;
     return false;
   }
@@ -278,6 +435,7 @@ class TwitchBot {
     };
 
     if (!handlers[action]) return;
+    this.logActivity('manager_command_run', rawMessage);
     await handlers[action]();
   }
 
@@ -450,7 +608,8 @@ class TwitchBot {
     if (!hasPermission(command.userlevel, userLevels)) return;
     if (!isManager(userLevels) && this.isOnCooldown(name, username, command.cooldown)) return;
 
-    if ((name === '!hello' || name === '!hi') && this.greetedUsers.has(cleanUsername(username))) return;
+    const greetingKey = cleanUsername(username);
+    if ((name === '!hello' || name === '!hi') && this.greetedUsers.has(greetingKey)) return;
 
     const response = this.parseVariables(command.response, name, {
       username,
@@ -460,12 +619,13 @@ class TwitchBot {
     });
 
     if (response) {
-      await this.say(channel, response);
-      this.setCooldown(name, username);
-    }
+      if (name === '!hello' || name === '!hi') {
+        this.rememberGreetedUser(greetingKey);
+      }
 
-    if (name === '!hello' || name === '!hi') {
-      this.greetedUsers.add(cleanUsername(username));
+      this.setCooldown(name, username);
+      this.logActivity('chat_command_run', `${username} ran ${name}.`);
+      await this.say(channel, response);
     }
   }
 
@@ -483,17 +643,16 @@ class TwitchBot {
     if (!hit) return;
     if (process.env.TWITCH_GREETING_ENABLED === 'false') return;
 
-    // Don't respond to bot's own messages
-    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
-    const senderUsername = cleanUsername(tags.username || tags['display-name']);
-    if (senderUsername === botUsername) return;
+    if (isBotSender(tags)) return;
 
     const username = getDisplayName(tags);
-    const key = `achievement-yo:${cleanUsername(tags.username || tags['display-name'])}`;
+    const key = getGreetingKey(tags);
+    if (!key) return;
     if (this.greetedUsers.has(key)) return;
 
+    this.rememberGreetedUser(key);
+    this.logActivity('achievement_greeting', key);
     await this.say(channel, `Yo ${username}`);
-    this.greetedUsers.add(key);
   }
 
   async handleGreeting(channel, tags, msgLower) {
@@ -502,18 +661,11 @@ class TwitchBot {
     const greeting = isStandaloneGreeting(msgLower);
     if (!greeting) return;
 
-    // Don't greet the bot itself - compare both user-id and username
-    const botUserId = String(process.env.TWITCH_BOT_USER_ID || '').toLowerCase();
-    const botUsername = cleanUsername(process.env.TWITCH_USERNAME);
-    const senderId = String(tags['user-id'] || '').toLowerCase();
-    const senderUsername = cleanUsername(tags.username);
-
-    // Check if this is the bot's own message
-    const isBotMessage = (senderId && senderId === botUserId) || (senderUsername === botUsername);
-    if (isBotMessage) return;
+    if (isBotSender(tags)) return;
 
     const username = getDisplayName(tags);
-    const key = cleanUsername(tags.username || tags['display-name']);
+    const key = getGreetingKey(tags);
+    if (!key) return;
     if (this.greetedUsers.has(key)) return;
 
     const responses = {
@@ -528,8 +680,9 @@ class TwitchBot {
       greetings: `Greetings, ${username}!`
     };
 
+    this.rememberGreetedUser(key);
+    this.logActivity('greeting_response', `${key}: ${greeting}`);
     await this.say(channel, responses[greeting] || `Hello ${username}!`);
-    this.greetedUsers.add(key);
   }
 
   parseVariables(response, commandName, context) {
@@ -577,36 +730,92 @@ class TwitchBot {
     this.userCommandCooldowns.set(`${commandName}:${cleanUsername(username)}`, Date.now());
   }
 
+  wasRecentlyHandled(tags, message) {
+    const sender = getSenderUsername(tags) || 'unknown';
+    const text = String(message || '').replace(/\s+/g, ' ').trim().toLowerCase();
+    if (!text) return false;
+
+    const key = `${sender}:${text}`;
+    const now = Date.now();
+    const lastSeen = this.recentIncomingMessages.get(key);
+
+    for (const [stored, seenAt] of this.recentIncomingMessages) {
+      if (now - seenAt > this.options.incomingDuplicateMemoryMs) {
+        this.recentIncomingMessages.delete(stored);
+      }
+    }
+
+    if (lastSeen && now - lastSeen <= this.options.incomingDuplicateMemoryMs) {
+      return true;
+    }
+
+    this.recentIncomingMessages.set(key, now);
+    return false;
+  }
+
   async say(channel, message) {
     const text = truncateForChat(message, this.options.maxChatMessageLength);
     if (!text) return;
 
     if (this.outgoingQueue.length >= this.options.maxQueueSize) {
       this.logger.warn('Twitch chat queue is full. Dropping outgoing message.');
+      this.logActivity('outgoing_dropped', text);
       return;
     }
 
     this.outgoingQueue.push({ channel, message: text });
+    this.logActivity('outgoing_queued', `${channel}: ${text}`);
     this.pumpQueue();
+  }
+
+  rememberOutgoingMessage(message) {
+    const key = truncateForChat(message, this.options.maxChatMessageLength).toLowerCase();
+    if (!key) return;
+
+    const now = Date.now();
+    this.recentOutgoingMessages.set(key, now);
+    for (const [stored, sentAt] of this.recentOutgoingMessages) {
+      if (now - sentAt > this.options.outgoingEchoMemoryMs) {
+        this.recentOutgoingMessages.delete(stored);
+      }
+    }
+  }
+
+  wasRecentlySentByBot(message) {
+    const key = truncateForChat(message, this.options.maxChatMessageLength).toLowerCase();
+    const sentAt = this.recentOutgoingMessages.get(key);
+    if (!sentAt) return false;
+
+    if (Date.now() - sentAt > this.options.outgoingEchoMemoryMs) {
+      this.recentOutgoingMessages.delete(key);
+      return false;
+    }
+
+    return true;
   }
 
   pumpQueue() {
     if (this.queueTimer || !this.connected || !this.client || !this.outgoingQueue.length) return;
 
     const next = this.outgoingQueue.shift();
+    this.rememberOutgoingMessage(next.message);
+    this.logActivity('outgoing_sent', `${next.channel}: ${next.message}`);
     this.client.say(next.channel, next.message).catch((err) => {
       this.logger.warn(`Twitch message was not sent: ${err.message}`);
+      this.logActivity('outgoing_send_failed', `${next.channel}: ${err.message}`);
     });
 
     this.queueTimer = setTimeout(() => {
       this.queueTimer = null;
       this.pumpQueue();
     }, this.options.chatSendDelayMs);
-    this.queueTimer.unref?.();
+    if (typeof this.queueTimer.unref === 'function') {
+      this.queueTimer.unref();
+    }
   }
 
   async stop() {
-    if (this.greetingTimer) clearInterval(this.greetingTimer);
+    this.logActivity('stop', 'Stopping Twitch bot.');
     if (this.queueTimer) clearTimeout(this.queueTimer);
     this.outgoingQueue = [];
 
@@ -615,6 +824,7 @@ class TwitchBot {
       await this.client.disconnect();
     } catch (err) {
       this.logger.warn(`Twitch bot disconnect did not finish cleanly: ${err.message}`);
+      this.logActivity('stop_disconnect_failed', err.message);
     }
   }
 }

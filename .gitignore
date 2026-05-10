@@ -4,6 +4,9 @@ npm-debug.log*
 .DS_Store
 coverage/
 *.log
+GREETING LOG/
+BOT LOG/
+data/bot.lock
 cloudflared.msi
 
 # wrangler files
